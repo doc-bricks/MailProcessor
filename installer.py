@@ -85,6 +85,19 @@ class ToolsPage(QWizardPage):
         self._checkboxes: dict[str, QCheckBox] = {}
         self._scan_results: dict = {}
         self._threads: list[_DownloadThread] = []  # prevent GC while running
+        self._active_downloads = 0
+
+    def isComplete(self) -> bool:
+        return self._active_downloads == 0
+
+    def _set_download_active(self, active: bool) -> None:
+        previous_complete = self.isComplete()
+        if active:
+            self._active_downloads += 1
+        else:
+            self._active_downloads = max(0, self._active_downloads - 1)
+        if self.isComplete() != previous_complete:
+            self.completeChanged.emit()
 
     def initializePage(self):
         self._run_scan()
@@ -94,6 +107,8 @@ class ToolsPage(QWizardPage):
         self._scan_results = self._tm.scan()
 
     def _rebuild_ui(self):
+        previous_selection = self.selected_tools()
+
         # Clear existing widgets
         old = self.layout()
         if old:
@@ -117,7 +132,7 @@ class ToolsPage(QWizardPage):
         for tid, meta in TOOL_DEFINITIONS.items():
             found = self._scan_results.get(tid)
             cb = QCheckBox(self._tm.tool_display_name(tid))
-            cb.setChecked(bool(found))
+            cb.setChecked(previous_selection.get(tid, bool(found)))
             cb.setToolTip(self._tm.tool_description(tid))
 
             status_label = QLabel()
@@ -164,6 +179,7 @@ class ToolsPage(QWizardPage):
 
         thread = _DownloadThread(self._tm, tool_id, self)
         self._threads.append(thread)
+        self._set_download_active(True)
 
         def _on_progress(pct: int) -> None:
             status_label.setText(f"  {tr('download_pct', pct)}")
@@ -184,7 +200,17 @@ class ToolsPage(QWizardPage):
 
         thread.progress.connect(_on_progress)
         thread.finished_signal.connect(_on_done)
-        thread.start()
+        thread.finished_signal.connect(lambda _err, t=thread: self._finalize_download_thread(t))
+        try:
+            thread.start()
+        except Exception:
+            self._finalize_download_thread(thread)
+            raise
+
+    def _finalize_download_thread(self, thread: _DownloadThread) -> None:
+        if thread in self._threads:
+            self._threads.remove(thread)
+        self._set_download_active(False)
 
     def _on_rescan(self):
         self._run_scan()
@@ -250,6 +276,7 @@ class PathsPage(QWizardPage):
                 return _browse
 
             browse_btn.clicked.connect(_make_browse())
+            edit.textChanged.connect(lambda *_: self.completeChanged.emit())
             row = QHBoxLayout()
             row.addWidget(edit)
             row.addWidget(browse_btn)
@@ -269,6 +296,21 @@ class PathsPage(QWizardPage):
             layout.addWidget(lbl)
 
         layout.addStretch()
+        self.completeChanged.emit()
+
+    def isComplete(self) -> bool:
+        selected = self._tools_page.selected_tools()
+        scan = self._tools_page._scan_results
+        for tid, checked in selected.items():
+            if not checked or scan.get(tid):
+                continue
+            edit = self._path_edits.get(tid)
+            if not edit:
+                return False
+            path = edit.text().strip()
+            if not path or not Path(path).exists():
+                return False
+        return True
 
     def manual_paths(self) -> dict[str, str]:
         return {tid: edit.text().strip() for tid, edit in self._path_edits.items()}

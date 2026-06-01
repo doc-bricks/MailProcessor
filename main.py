@@ -32,6 +32,9 @@ def main():
         cfg = cfg_module.load()
         set_language(cfg.language)
 
+    from settings_dialog import ensure_autostart_entry
+    ensure_autostart_entry(cfg.start_with_windows)
+
     from tray import MailProcessorTray
     tray = MailProcessorTray(cfg)
     if not tray.isSystemTrayAvailable():

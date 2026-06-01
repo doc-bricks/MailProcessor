@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -48,6 +49,19 @@ _SCAN_ROOTS = [
     Path(__file__).parent.parent.parent,   # .SOFTWARE/
     _DOWNLOAD_DIR,                         # downloaded via GitHub installer
 ]
+
+
+def _python_interpreter() -> Optional[str]:
+    """Return an interpreter that can execute tool scripts."""
+    if not getattr(sys, "frozen", False):
+        return sys.executable
+
+    for candidate in ("pythonw", "python", "py"):
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+
+    return None
 
 
 class ToolManager:
@@ -136,9 +150,12 @@ class ToolManager:
         script = Path(t.path) / t.main_script
         if not script.exists():
             return f"Script not found: {script}"
+        interpreter = _python_interpreter()
+        if not interpreter:
+            return "Python interpreter not found"
         try:
             subprocess.Popen(
-                [sys.executable, str(script)],
+                [interpreter, str(script)],
                 cwd=str(script.parent),
             )
             return None

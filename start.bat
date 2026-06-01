@@ -9,7 +9,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python main.py
+if exist "dist\MailProcessor.exe" (
+    "dist\MailProcessor.exe"
+) else (
+    python main.py
+)
 if errorlevel 1 (
     echo [FEHLER] MailProcessor konnte nicht gestartet werden.
     pause

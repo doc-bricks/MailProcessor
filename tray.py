@@ -1,10 +1,10 @@
 """System tray icon and context menu."""
 
+import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QAction
-from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QApplication, QMessageBox
+from PySide6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap
+from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 import config as cfg_module
 from config import AppConfig
@@ -41,12 +41,29 @@ def _make_tray_icon(size: int = 22) -> QIcon:
     return QIcon(pixmap)
 
 
+def _resource_path(relative_path: str) -> Path:
+    """Return an absolute path to a resource inside source or packaged app."""
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).parent
+    return base / relative_path
+
+
+def _load_tray_icon() -> QIcon:
+    icon_path = _resource_path("resources/icon.ico")
+    icon = QIcon(str(icon_path))
+    if icon.isNull():
+        return _make_tray_icon()
+    return icon
+
+
 class MailProcessorTray(QSystemTrayIcon):
     def __init__(self, app_cfg: AppConfig, parent=None):
         super().__init__(parent)
         self._cfg = app_cfg
         self._tm = ToolManager(app_cfg)
-        self.setIcon(_make_tray_icon())
+        self.setIcon(_load_tray_icon())
         self.setToolTip(tr("tray_tooltip"))
         self._build_menu()
         self.activated.connect(self._on_activated)

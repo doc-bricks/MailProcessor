@@ -59,6 +59,56 @@ def test_load_corrupt_file(tmp_path):
     assert cfg.first_run is True
 
 
+def test_load_keeps_valid_top_level_settings_when_tool_entry_is_invalid(tmp_path):
+    config_dir = Path(str(cfg_module.CONFIG_DIR))
+    config_dir.mkdir(parents=True, exist_ok=True)
+    cfg_file = Path(str(cfg_module.CONFIG_FILE))
+    cfg_file.write_text(
+        json.dumps(
+            {
+                "language": "en",
+                "first_run": False,
+                "start_with_windows": True,
+                "tools": {
+                    "broken_tool": ["not-a-dict"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    cfg = cfg_module.load()
+
+    assert cfg.language == "en"
+    assert cfg.first_run is False
+    assert cfg.start_with_windows is True
+    assert cfg.tools == {}
+
+
+def test_load_ignores_non_mapping_tools_block_but_keeps_global_settings(tmp_path):
+    config_dir = Path(str(cfg_module.CONFIG_DIR))
+    config_dir.mkdir(parents=True, exist_ok=True)
+    cfg_file = Path(str(cfg_module.CONFIG_FILE))
+    cfg_file.write_text(
+        json.dumps(
+            {
+                "language": "en",
+                "first_run": False,
+                "start_with_windows": True,
+                "tools": ["unexpected-list"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    cfg = cfg_module.load()
+
+    assert cfg.language == "en"
+    assert cfg.first_run is False
+    assert cfg.start_with_windows is True
+    assert cfg.tools == {}
+
+
 def test_get_tool_auto_creates():
     cfg = AppConfig()
     t = cfg.get_tool("new_tool")

@@ -1,4 +1,4 @@
-__pycache__/
+﻿__pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
@@ -23,3 +23,8 @@ SHA256SUMS.txt
 
 # Internal task tracking (BACH internal, never publish)
 AUFGABEN.txt
+# ---- Interne Steuerungsdateien ----
+DECISIONS.md
+PORTIERUNGSPLAN.md
+TODO.md
+DONE.md

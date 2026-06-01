@@ -46,6 +46,47 @@ def test_register_missing_script(tmp_path, tm):
     assert result is False
 
 
+def test_launch_uses_python_interpreter_when_frozen(tmp_path, tm, monkeypatch):
+    """launch() falls back to a real Python interpreter in frozen builds."""
+    folder = tmp_path / "MyTool"
+    folder.mkdir()
+    script = folder / "main.py"
+    script.write_text("", encoding="utf-8")
+
+    tm.register("universal_mail_cleaner", str(folder), "main.py")
+    monkeypatch.setattr("tool_manager.sys.frozen", True, raising=False)
+    monkeypatch.setattr(
+        "tool_manager.shutil.which",
+        lambda name: r"C:\\Python311\\pythonw.exe" if name == "pythonw" else None,
+    )
+
+    captured = {}
+
+    def fake_popen(args, cwd=None):
+        captured["args"] = args
+        captured["cwd"] = cwd
+
+    monkeypatch.setattr("tool_manager.subprocess.Popen", fake_popen)
+
+    assert tm.launch("universal_mail_cleaner") is None
+    assert captured["args"] == [r"C:\\Python311\\pythonw.exe", str(script)]
+    assert captured["cwd"] == str(script.parent)
+
+
+def test_launch_reports_missing_python_when_frozen(tmp_path, tm, monkeypatch):
+    """launch() refuses to use the frozen EXE when no interpreter is available."""
+    folder = tmp_path / "MyTool"
+    folder.mkdir()
+    script = folder / "main.py"
+    script.write_text("", encoding="utf-8")
+
+    tm.register("universal_mail_cleaner", str(folder), "main.py")
+    monkeypatch.setattr("tool_manager.sys.frozen", True, raising=False)
+    monkeypatch.setattr("tool_manager.shutil.which", lambda name: None)
+
+    assert tm.launch("universal_mail_cleaner") == "Python interpreter not found"
+
+
 def test_unregister_clears_tool(tmp_path, tm):
     """unregister() removes the tool from active_tools."""
     folder = tmp_path / "MyTool"

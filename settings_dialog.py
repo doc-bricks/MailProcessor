@@ -1,5 +1,8 @@
 """Settings dialog: manage tools and general preferences."""
 
+import os
+import shlex
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -14,6 +17,100 @@ import config as cfg_module
 from config import AppConfig
 from i18n import tr, set_language, get_language
 from tool_manager import ToolManager, TOOL_DEFINITIONS
+
+_AUTOSTART_REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\Run"
+_AUTOSTART_APP_NAME = "MailProcessor"
+
+
+def _expected_autostart_command() -> str:
+    exe = Path(sys.executable)
+    if getattr(sys, "frozen", False):
+        return f'"{exe}"'
+    script = Path(__file__).parent / "main.py"
+    return f'"{exe}" "{script}"'
+
+
+def _normalize_cmd_token(token: str) -> str:
+    value = token.strip().strip("'").strip('"')
+    if not value:
+        return ""
+    try:
+        return os.path.normcase(os.path.normpath(os.path.expandvars(value)))
+    except Exception:
+        return os.path.normcase(value)
+
+
+def _command_tokens(command: str) -> list[str]:
+    if not command:
+        return []
+    try:
+        tokens = shlex.split(command, posix=False)
+    except Exception:
+        tokens = command.split()
+    return [token.strip() for token in tokens if token]
+
+
+def _read_autostart_command() -> str | None:
+    if os.name != "nt":
+        return None
+    import winreg
+
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, _AUTOSTART_REG_PATH, 0, winreg.KEY_READ)
+        try:
+            value, _ = winreg.QueryValueEx(key, _AUTOSTART_APP_NAME)
+            return value if isinstance(value, str) else None
+        finally:
+            winreg.CloseKey(key)
+    except Exception:
+        return None
+
+
+def _is_current_autostart_command(stored_command: str) -> bool:
+    expected = _command_tokens(_expected_autostart_command())
+    current = _command_tokens(stored_command)
+    if len(current) < len(expected):
+        return False
+
+    for idx, expected_token in enumerate(expected):
+        if _normalize_cmd_token(current[idx]) != _normalize_cmd_token(expected_token):
+            return False
+    return True
+
+
+def ensure_autostart_entry(enable: bool) -> None:
+    """Ensure registry autostart entry points to the current executable path."""
+    if os.name != "nt":
+        return
+    import winreg
+
+    if not enable:
+        try:
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, _AUTOSTART_REG_PATH, 0, winreg.KEY_SET_VALUE)
+            try:
+                try:
+                    winreg.DeleteValue(key, _AUTOSTART_APP_NAME)
+                except FileNotFoundError:
+                    pass
+            finally:
+                winreg.CloseKey(key)
+        except Exception:
+            pass
+        return
+
+    expected = _expected_autostart_command()
+    current = _read_autostart_command()
+    if current and _is_current_autostart_command(current):
+        return
+
+    try:
+        key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, _AUTOSTART_REG_PATH)
+        try:
+            winreg.SetValueEx(key, _AUTOSTART_APP_NAME, 0, winreg.REG_SZ, expected)
+        finally:
+            winreg.CloseKey(key)
+    except Exception:
+        pass
 
 
 class SettingsDialog(QDialog):
@@ -196,21 +293,4 @@ class SettingsDialog(QDialog):
 
     @staticmethod
     def _apply_autostart(enable: bool):
-        import winreg
-        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        app_name = "MailProcessor"
-        try:
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
-            if enable:
-                import sys
-                from pathlib import Path
-                script = str(Path(__file__).parent / "main.py")
-                winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, f'"{sys.executable}" "{script}"')
-            else:
-                try:
-                    winreg.DeleteValue(key, app_name)
-                except FileNotFoundError:
-                    pass
-            winreg.CloseKey(key)
-        except Exception:
-            pass
+        ensure_autostart_entry(enable)

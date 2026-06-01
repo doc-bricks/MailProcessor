@@ -37,12 +37,20 @@ def load() -> AppConfig:
         return AppConfig()
     try:
         data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return AppConfig()
         cfg = AppConfig(
             language=data.get("language", "de"),
             first_run=data.get("first_run", True),
             start_with_windows=data.get("start_with_windows", False),
         )
-        for tid, tdata in data.get("tools", {}).items():
+        tools_data = data.get("tools", {})
+        if not isinstance(tools_data, dict):
+            tools_data = {}
+
+        for tid, tdata in tools_data.items():
+            if not isinstance(tid, str) or not isinstance(tdata, dict):
+                continue
             cfg.tools[tid] = ToolConfig(
                 enabled=tdata.get("enabled", False),
                 path=tdata.get("path"),

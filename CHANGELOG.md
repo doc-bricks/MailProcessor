@@ -5,6 +5,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Load tray icon from `resources/icon.ico` with a fallback to the existing generated envelope icon.
+- Regenerate `resources/icon.ico` in 16x16, 32x32, and 256x256 sizes via Pillow.
+- Validate and repair Windows autostart registry entry during startup so it points to the current executable.
+- Use a real Python interpreter when launching tools from a frozen MailProcessor build.
+- Preserve installer wizard selections across page rebuilds and keep the wizard blocked while GitHub downloads are still running.
+
 ## [0.1.0] - 2026-05-02
 
 ### Added
