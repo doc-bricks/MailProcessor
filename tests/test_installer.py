@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 
 from config import AppConfig
 from i18n import set_language
-from installer import PathsPage, ToolsPage
+from installer import PathsPage, ToolsPage, WelcomePage
 from tool_manager import ToolManager
 
 
@@ -34,6 +34,22 @@ def tm(monkeypatch):
         },
     )
     return tool_manager
+
+
+def test_welcome_page_rebuild_replaces_layout_on_revisit(qapp):
+    """Regression: WelcomePage.initializePage() must discard the old layout via
+    QWidget().setLayout(old) before calling _rebuild(). Without it, Qt silently
+    ignores the new QVBoxLayout(self) and the page renders blank on revisit."""
+    set_language("de")
+    page = WelcomePage()
+    page.initializePage()
+    assert page.layout() is not None
+    assert page.layout().count() > 0, "Layout should have widgets after first build"
+
+    # Simulate going back to this page (second call to initializePage)
+    page.initializePage()
+    assert page.layout() is not None
+    assert page.layout().count() > 0, "Layout must still have widgets after rebuild"
 
 
 def test_tools_page_preserves_selection_on_rebuild(qapp, tm):

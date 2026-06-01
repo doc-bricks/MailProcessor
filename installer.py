@@ -60,11 +60,17 @@ class WelcomePage(QWizardPage):
         layout.addStretch()
 
     def initializePage(self):
-        # Clear and rebuild on every visit (language may have changed)
-        while self.layout() and self.layout().count():
-            item = self.layout().takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        # Clear and rebuild on every visit (language may have changed).
+        # Transfer the old layout to a temporary QWidget so Qt releases it;
+        # without this, QVBoxLayout(self) in _rebuild() is silently ignored
+        # because Qt does not replace an existing layout, leaving the page blank.
+        old = self.layout()
+        if old:
+            while old.count():
+                item = old.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            QWidget().setLayout(old)
         self._rebuild()
 
     def _on_lang_changed(self, idx):
