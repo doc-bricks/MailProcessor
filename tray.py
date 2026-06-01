@@ -1,5 +1,6 @@
 """System tray icon and context menu."""
 
+import copy
 import sys
 from pathlib import Path
 
@@ -113,9 +114,14 @@ class MailProcessorTray(QSystemTrayIcon):
             )
 
     def _open_settings(self):
+        from PySide6.QtWidgets import QDialog
         from settings_dialog import SettingsDialog
+        # Snapshot tools so Cancel can restore them: ToolManager holds a reference
+        # to the same AppConfig, so mutations from remove/rescan happen immediately.
+        tools_snapshot = copy.deepcopy(self._cfg.tools)
         dlg = SettingsDialog(self._cfg)
-        dlg.exec()
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            self._cfg.tools = tools_snapshot
         # Rebuild menu in case tools changed
         self._build_menu()
         # Persist language change

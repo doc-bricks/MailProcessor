@@ -1,11 +1,12 @@
 """Tests for installer.py - wizard state and download tracking."""
 
+import copy
 import os
 
 import pytest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDialog
 
-from config import AppConfig
+from config import AppConfig, ToolConfig
 from i18n import set_language
 from installer import PathsPage, ToolsPage, WelcomePage
 from tool_manager import ToolManager
@@ -34,6 +35,34 @@ def tm(monkeypatch):
         },
     )
     return tool_manager
+
+
+def test_settings_cancel_restores_tool_registrations(qapp, monkeypatch):
+    """Regression: SettingsDialog mutations (remove/rescan) must be rolled back when
+    the user clicks Cancel. Before the fix, _open_settings() saved the mutated cfg
+    unconditionally regardless of whether exec() returned Accepted or Rejected."""
+    from tray import MailProcessorTray
+    from settings_dialog import SettingsDialog
+
+    cfg = AppConfig()
+    cfg.tools["universal_mail_cleaner"] = ToolConfig(
+        enabled=True, path="/tools/umc", main_script="main.py"
+    )
+
+    def _fake_exec(self):
+        # Simulate the user removing a tool and then clicking Cancel
+        self._tm.unregister("universal_mail_cleaner")
+        return QDialog.DialogCode.Rejected
+
+    monkeypatch.setattr(SettingsDialog, "exec", _fake_exec)
+
+    tray = MailProcessorTray(cfg)
+    tray._open_settings()
+
+    assert cfg.tools["universal_mail_cleaner"].enabled is True, (
+        "Tool removal must be rolled back when Settings dialog is cancelled"
+    )
+    assert cfg.tools["universal_mail_cleaner"].path == "/tools/umc"
 
 
 def test_welcome_page_rebuild_replaces_layout_on_revisit(qapp):
