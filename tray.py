@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QSystemTrayIcon
 
 import config as cfg_module
 from config import AppConfig
@@ -96,6 +96,10 @@ class MailProcessorTray(QSystemTrayIcon):
         settings_action.triggered.connect(self._open_settings)
         menu.addAction(settings_action)
 
+        export_action = QAction(tr("menu_export_snapshot"), self)
+        export_action.triggered.connect(self._export_snapshot)
+        menu.addAction(export_action)
+
         menu.addSeparator()
         quit_action = QAction(tr("menu_quit"), self)
         quit_action.triggered.connect(QApplication.quit)
@@ -130,6 +134,39 @@ class MailProcessorTray(QSystemTrayIcon):
             self._cfg.language = get_language()
         cfg_module.save(self._cfg)
         self.setToolTip(tr("tray_tooltip"))
+
+    def _export_snapshot(self):
+        from snapshot_export import SNAPSHOT_SCHEMA, write_snapshot
+
+        suggested_path = Path.home() / f"{SNAPSHOT_SCHEMA}.json"
+        selected_path, _ = QFileDialog.getSaveFileName(
+            None,
+            tr("export_dialog_title"),
+            str(suggested_path),
+            tr("export_file_filter"),
+        )
+        if not selected_path:
+            return
+        if not selected_path.lower().endswith(".json"):
+            selected_path = f"{selected_path}.json"
+
+        try:
+            written_path = write_snapshot(selected_path, self._cfg)
+        except Exception as exc:
+            self.showMessage(
+                tr("error"),
+                tr("export_error", str(exc)),
+                QSystemTrayIcon.MessageIcon.Critical,
+                4000,
+            )
+            return
+
+        self.showMessage(
+            tr("app_name"),
+            tr("export_ok", str(written_path)),
+            QSystemTrayIcon.MessageIcon.Information,
+            4000,
+        )
 
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:

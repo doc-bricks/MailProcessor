@@ -21,6 +21,7 @@ _DOWNLOAD_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "MailProcess
 # Static metadata for the three supported tools
 TOOL_DEFINITIONS: dict[str, dict] = {
     "universal_mail_cleaner": {
+        "display_name": "Universal Mail Cleaner",
         "name_key": "tool_umc_name",
         "desc_key": "tool_umc_desc",
         "main_scripts": ["mail_imap_cleaner_v1.py", "main.py"],
@@ -28,6 +29,7 @@ TOOL_DEFINITIONS: dict[str, dict] = {
         "github_repo": "doc-bricks/UniversalMailCleaner",
     },
     "universal_docs_grabber": {
+        "display_name": "Universal Docs Grabber",
         "name_key": "tool_udg_name",
         "desc_key": "tool_udg_desc",
         "main_scripts": ["UniversalDocsGrabberV1.py", "main.py"],
@@ -35,6 +37,7 @@ TOOL_DEFINITIONS: dict[str, dict] = {
         "github_repo": "doc-bricks/UniversalDocsGrabber",
     },
     "universal_invoice_mail": {
+        "display_name": "Universal Invoice Mail",
         "name_key": "tool_uim_name",
         "desc_key": "tool_uim_desc",
         "main_scripts": ["UniversalInvoiceMail.py", "main.py"],

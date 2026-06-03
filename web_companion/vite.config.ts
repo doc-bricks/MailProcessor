@@ -10,7 +10,7 @@ export default defineConfig({
       manifest: {
         name: 'MailProcessor Companion',
         short_name: 'MailProcessor',
-        description: 'Mobile Companion fuer MailProcessor',
+        description: 'Mobile Companion für MailProcessor',
         theme_color: '#1f2937',
         background_color: '#ffffff',
         display: 'standalone',

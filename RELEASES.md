@@ -4,7 +4,7 @@
 
 ### GitHub
 
-- Repository: [lukisch/MailProcessor](https://github.com/lukisch/MailProcessor)
+- Repository: [doc-bricks/MailProcessor](https://github.com/doc-bricks/MailProcessor)
 - Tag: `v0.1.0`
 - Type: public Windows desktop release
 

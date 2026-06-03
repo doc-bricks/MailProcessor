@@ -4,6 +4,8 @@ System tray launcher for the three Universal Mail Tools.
 
 > **Deutsche Dokumentation:** [README-DE.md](README-DE.md)
 
+[![MailProcessor tests](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml/badge.svg)](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml)
+
 ![MailProcessor Installer](README/screenshots/main.png)
 
 ## What it does
@@ -21,6 +23,7 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 - GitHub installer: download tools directly from GitHub Releases
 - Version numbers shown in tray menu (read from each tool's CHANGELOG.md)
 - Settings: change paths, remove tools, add manually
+- Read-only snapshot export as `mailprocessor-suite-v1.json` for the companion view
 - Windows autostart (registry entry)
 - Bilingual: German / English
 
@@ -52,6 +55,15 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 - Python 3.10+
 - PySide6 6.x
 - One or more Universal Mail Tools (auto-downloaded via wizard)
+
+## Development checks
+
+```bash
+python -m pytest -q
+python -m compileall .
+```
+
+Current local test suite: 32 Pytest tests.
 
 ## Configuration
 

@@ -1,0 +1,34 @@
+# MailProcessor
+
+Canonical repository: https://github.com/doc-bricks/MailProcessor
+Organization: doc-bricks
+Primary language: Python
+UI stack: PySide6 desktop tray application
+License: MIT
+
+MailProcessor is the local-first Windows tray hub for the doc-bricks Universal Mail Tools:
+
+- Universal Mail Cleaner: https://github.com/doc-bricks/UniversalMailCleaner
+- Universal Docs Grabber: https://github.com/doc-bricks/UniversalDocsGrabber
+- Universal Invoice Mail: https://github.com/doc-bricks/UniversalInvoiceMail
+
+Core behavior:
+
+- Starts configured mail tools from a single system tray menu.
+- Scans sibling folders and `%LOCALAPPDATA%\MailProcessor\tools\` for supported tools.
+- Downloads latest tool releases from GitHub when users opt in through the setup wizard.
+- Stores launcher configuration under `%LOCALAPPDATA%\MailProcessor\config.json`.
+- Exports a read-only `mailprocessor-suite-v1.json` snapshot for the companion workflow.
+
+Privacy boundary:
+
+- MailProcessor does not store mail contents, passwords, tokens, or IMAP credentials.
+- Snapshot exports redact local paths and contain only launcher metadata.
+- The web companion is a status/reference companion, not a remote-control surface for desktop tools.
+
+Local verification:
+
+```bash
+python -m pytest -q
+python -m compileall .
+```

@@ -5,6 +5,7 @@ _STRINGS: dict[str, dict[str, str]] = {
     "app_name":              {"de": "MailProcessor",                        "en": "MailProcessor"},
     "tray_tooltip":          {"de": "MailProcessor – Mail-Tools Launcher",  "en": "MailProcessor – Mail Tools Launcher"},
     "menu_settings":         {"de": "Einstellungen",                        "en": "Settings"},
+    "menu_export_snapshot":  {"de": "Arbeitsstand exportieren …",           "en": "Export snapshot…"},
     "menu_quit":             {"de": "Beenden",                              "en": "Quit"},
     "no_tools":              {"de": "Keine Tools konfiguriert",             "en": "No tools configured"},
     "start_tool":            {"de": "Starten",                              "en": "Start"},
@@ -80,6 +81,10 @@ _STRINGS: dict[str, dict[str, str]] = {
     "download_error":        {"de": "Download fehlgeschlagen:\n{}",        "en": "Download failed:\n{}"},
     "download_title":        {"de": "Download läuft",                      "en": "Downloading"},
     "download_cancel":       {"de": "Abbrechen",                           "en": "Cancel"},
+    "export_dialog_title":   {"de": "Arbeitsstand exportieren",            "en": "Export snapshot"},
+    "export_file_filter":    {"de": "JSON-Dateien (*.json)",               "en": "JSON files (*.json)"},
+    "export_ok":             {"de": "Arbeitsstand exportiert:\n{}",        "en": "Snapshot exported:\n{}"},
+    "export_error":          {"de": "Export fehlgeschlagen:\n{}",          "en": "Export failed:\n{}"},
 }
 
 _lang: str = "de"

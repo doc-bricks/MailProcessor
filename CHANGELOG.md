@@ -7,12 +7,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- Read-only Desktop-Snapshot export `mailprocessor-suite-v1.json` with redacted path hints for the companion workflow.
+- Tray action to export the current MailProcessor workspace snapshot directly as JSON.
+- GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
+- `llms.txt` with machine-readable project context for the doc-bricks mail suite.
+
 ### Changed
 - Load tray icon from `resources/icon.ico` with a fallback to the existing generated envelope icon.
 - Regenerate `resources/icon.ico` in 16x16, 32x32, and 256x256 sizes via Pillow.
 - Validate and repair Windows autostart registry entry during startup so it points to the current executable.
 - Use a real Python interpreter when launching tools from a frozen MailProcessor build.
 - Preserve installer wizard selections across page rebuilds and keep the wizard blocked while GitHub downloads are still running.
+- Align companion documentation on the final snapshot name `mailprocessor-suite-v1.json`.
+- Document the local 32-test verification command in both READMEs.
 
 ## [0.1.0] - 2026-05-02
 
