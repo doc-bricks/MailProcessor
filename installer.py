@@ -188,21 +188,27 @@ class ToolsPage(QWizardPage):
         self._set_download_active(True)
 
         def _on_progress(pct: int) -> None:
-            status_label.setText(f"  {tr('download_pct', pct)}")
+            try:
+                status_label.setText(f"  {tr('download_pct', pct)}")
+            except RuntimeError:
+                return  # Widgets wurden durch UI-Neuerstellung (Back→Next) gelöscht
 
         def _on_done(err: str) -> None:
-            if err:
-                status_label.setText(f"  ✗ {tr('download_error', err)}")
-                status_label.setStyleSheet("color: red; font-size: 11px;")
-                dl_btn.setEnabled(True)
-            else:
-                status_label.setText(f"  ✓ {tr('download_ok')}")
-                status_label.setStyleSheet("color: green; font-size: 11px;")
-                cb.setChecked(True)
-                # Update scan result so _on_finish can register the tool
-                t = self._tm.cfg.tools.get(tool_id)
-                if t and t.path and t.main_script:
-                    self._scan_results[tool_id] = (t.path, t.main_script)
+            try:
+                if err:
+                    status_label.setText(f"  ✗ {tr('download_error', err)}")
+                    status_label.setStyleSheet("color: red; font-size: 11px;")
+                    dl_btn.setEnabled(True)
+                else:
+                    status_label.setText(f"  ✓ {tr('download_ok')}")
+                    status_label.setStyleSheet("color: green; font-size: 11px;")
+                    cb.setChecked(True)
+                    # Update scan result so _on_finish can register the tool
+                    t = self._tm.cfg.tools.get(tool_id)
+                    if t and t.path and t.main_script:
+                        self._scan_results[tool_id] = (t.path, t.main_script)
+            except RuntimeError:
+                return  # Widgets wurden durch UI-Neuerstellung (Back→Next) gelöscht
 
         thread.progress.connect(_on_progress)
         thread.finished_signal.connect(_on_done)

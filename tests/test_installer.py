@@ -138,6 +138,27 @@ def test_rescan_blocked_while_download_active(qapp, tm):
     page._set_download_active(False)
 
 
+def test_download_callback_survives_page_rebuild(qapp, tm):
+    """Regression: _on_done/_on_progress dürfen keinen RuntimeError werfen wenn die UI
+    nach Download-Start neu aufgebaut wurde. Szenario: Download läuft, Nutzer navigiert
+    Back→Next (triggert initializePage → _rebuild_ui → deleteLater auf alten Widgets).
+    Der try/except-Guard in den Closures verhindert den Crash."""
+    set_language("de")
+    page = ToolsPage(tm)
+    page.initializePage()
+
+    # Aktiver Download, dann Back→Next-Navigation (initializePage ist nicht geblockt)
+    page._set_download_active(True)
+    page.initializePage()         # löst deleteLater() auf alten Widgets aus
+    qapp.processEvents()          # verarbeitet ausstehende Qt-Events
+
+    # Seite bleibt nach dem Rebuild vollständig nutzbar
+    assert page.layout() is not None
+    assert page._checkboxes
+
+    page._set_download_active(False)
+
+
 def test_paths_page_requires_manual_paths_before_completion(qapp, tm, tmp_path):
     set_language("de")
     tools_page = ToolsPage(tm)
