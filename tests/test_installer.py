@@ -144,7 +144,8 @@ def test_download_callback_survives_page_rebuild(qapp, tm, monkeypatch):
        nach Download-Start zerstört wurden (shiboken6.delete = deterministisch tot).
     2. _scan_results muss auch dann aktualisiert werden wenn der Widget-Zugriff danach
        RuntimeError wirft — das Update liegt außerhalb des try/except-Blocks.
-       Ohne die Umordnung (Fix): except feuert vor dem Update → assert_in schlägt fehl.
+       Ohne die Umordnung (Fix): except feuert vor dem Update → Wert bleibt None statt
+       dem erwarteten Tuple, was die Gleichheits-Assertion unten fehlschlagen lässt.
     """
     from installer import _DownloadThread
     from PySide6.QtWidgets import QLabel, QPushButton, QCheckBox
