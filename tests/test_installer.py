@@ -139,38 +139,51 @@ def test_rescan_blocked_while_download_active(qapp, tm):
 
 
 def test_download_callback_survives_page_rebuild(qapp, tm, monkeypatch):
-    """Regression: _on_done/_on_progress dürfen keine RuntimeError propagieren wenn Widgets
-    durch deleteLater() bereits zerstört wurden. Ohne den try/except-Guard in den Closures
-    würde thread.finished_signal.emit() eine RuntimeError aus status_label.setText() werfen."""
+    """Regression (zwei Aspekte):
+    1. _on_done/_on_progress dürfen keine unkontrollierten Fehler auslösen wenn Widgets
+       nach Download-Start zerstört wurden (shiboken6.delete = deterministisch tot).
+    2. _scan_results muss auch dann aktualisiert werden wenn der Widget-Zugriff danach
+       RuntimeError wirft — das Update liegt außerhalb des try/except-Blocks.
+       Ohne die Umordnung (Fix): except feuert vor dem Update → assert_in schlägt fehl.
+    """
     from installer import _DownloadThread
     from PySide6.QtWidgets import QLabel, QPushButton, QCheckBox
+    from config import ToolConfig
+    import shiboken6
 
     set_language("de")
     page = ToolsPage(tm)
     page.initializePage()
 
-    # Thread-Start unterdrücken — kein echter Hintergrund-Thread nötig
     monkeypatch.setattr(_DownloadThread, "start", lambda self: None)
 
-    # Echte Widgets: _start_download greift in den ersten Zeilen sofort auf sie zu
+    # Echte Widgets (benötigt: _start_download greift sofort auf sie zu)
     label = QLabel()
     btn = QPushButton()
     cb = QCheckBox()
 
+    # Tool mit path+main_script eintragen damit der _scan_results-Zweig in _on_done läuft
     tool_id = "universal_docs_grabber"
+    tm.cfg.tools[tool_id] = ToolConfig(enabled=False, path="/fake/path", main_script="main.py")
+
     page._start_download(tool_id, label, btn, cb)
     thread = page._threads[-1]
 
-    # Widgets zerstören — simuliert UI-Rebuild durch Back→Next-Navigation
-    label.deleteLater()
-    btn.deleteLater()
-    cb.deleteLater()
-    qapp.processEvents()
+    # C++-Objekte deterministisch zerstören (kein DeferredDelete/Event-Loop nötig)
+    shiboken6.delete(label)
+    shiboken6.delete(btn)
+    shiboken6.delete(cb)
 
-    # Fortschritts- und Abschluss-Callbacks dürfen keine RuntimeError propagieren
-    thread.progress.emit(50)           # _on_progress auf zerstörtem label
-    thread.finished_signal.emit("")    # _on_done Erfolgs-Pfad auf zerstörten Widgets
-    thread.finished_signal.emit("err") # _on_done Fehler-Pfad auf zerstörten Widgets
+    # Callbacks auf zerstörten Widgets — darf nicht crashen
+    thread.progress.emit(50)
+    thread.finished_signal.emit("")
+
+    # Kernaussage: _scan_results muss befüllt sein trotz RuntimeError beim Widget-Zugriff.
+    # Ohne die Umordnung (Update im try-Block) überspringt der except-Guard das Update.
+    assert tool_id in page._scan_results, (
+        "_scan_results muss unabhängig vom Widget-Zustand befüllt werden"
+    )
+    assert page._scan_results[tool_id] == ("/fake/path", "main.py")
 
 
 def test_paths_page_requires_manual_paths_before_completion(qapp, tm, tmp_path):
