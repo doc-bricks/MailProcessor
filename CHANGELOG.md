@@ -21,6 +21,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Preserve installer wizard selections across page rebuilds and keep the wizard blocked while GitHub downloads are still running.
 - Align companion documentation on the final snapshot name `mailprocessor-suite-v1.json`.
 - Document the local 32-test verification command in both READMEs.
+- Rescan logic now rediscovers GitHub-installed tools from the extracted installer layout under `%LOCALAPPDATA%\\MailProcessor\\tools\\<tool_id>\\extracted\\...`.
 
 ## [0.1.0] - 2026-05-02
 

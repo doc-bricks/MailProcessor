@@ -111,6 +111,33 @@ def test_tools_page_blocks_completion_while_download_active(qapp):
     assert changes == [False, True]
 
 
+def test_rescan_blocked_while_download_active(qapp, tm):
+    """Regression: _on_rescan() darf die UI nicht neu aufbauen, wenn noch Download-Threads
+    laufen. Ein Rebuild löscht die Widgets per deleteLater(); die _on_done-Closures der
+    Threads referenzieren diese alten Widgets und würden bei Abschluss RuntimeError auslösen."""
+    set_language("de")
+    page = ToolsPage(tm)
+    page.initializePage()
+
+    # Merke den aktuellen Layout-Stand (Adresse des Layout-Objekts)
+    layout_before = page.layout()
+
+    # Simuliere einen aktiven Download
+    page._set_download_active(True)
+    assert page._active_downloads == 1
+
+    # Rescan soll ohne Wirkung bleiben
+    page._on_rescan()
+
+    # Layout darf nicht ersetzt worden sein
+    assert page.layout() is layout_before, (
+        "_on_rescan() darf während aktiver Downloads keine UI-Neuerstellung auslösen"
+    )
+
+    # Cleanup
+    page._set_download_active(False)
+
+
 def test_paths_page_requires_manual_paths_before_completion(qapp, tm, tmp_path):
     set_language("de")
     tools_page = ToolsPage(tm)

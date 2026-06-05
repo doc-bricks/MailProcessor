@@ -138,3 +138,28 @@ def test_find_script_in_folder(tmp_path):
     (folder / "UniversalDocsGrabberV1.py").write_text("", encoding="utf-8")
     result = ToolManager.find_script_in_folder(str(folder), "universal_docs_grabber")
     assert result == "UniversalDocsGrabberV1.py"
+
+
+def test_scan_finds_downloaded_tool_inside_github_extract_dir(tm, tmp_path, monkeypatch):
+    """scan() rediscovers tools from the GitHub installer extract layout."""
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    extracted = (
+        download_root
+        / "universal_mail_cleaner"
+        / "extracted"
+        / "doc-bricks-UniversalMailCleaner-abc123"
+    )
+    extracted.mkdir(parents=True)
+    (extracted / "mail_imap_cleaner_v1.py").write_text("# demo", encoding="utf-8")
+
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+    monkeypatch.setattr(tool_manager, "_SCAN_ROOTS", [download_root])
+
+    results = tm.scan()
+
+    assert results["universal_mail_cleaner"] == (
+        str(extracted),
+        "mail_imap_cleaner_v1.py",
+    )

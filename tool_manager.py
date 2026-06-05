@@ -54,6 +54,51 @@ _SCAN_ROOTS = [
 ]
 
 
+def _same_path(left: Path, right: Path) -> bool:
+    try:
+        return left.resolve(strict=False) == right.resolve(strict=False)
+    except Exception:
+        return left == right
+
+
+def _iter_scan_candidates(root: Path, folder_hints: list[str]):
+    seen: set[str] = set()
+
+    def register(path: Path):
+        try:
+            key = str(path.resolve(strict=False))
+        except Exception:
+            key = str(path)
+        if key in seen or not path.is_dir():
+            return None
+        seen.add(key)
+        return path
+
+    for folder_name in folder_hints:
+        candidate = register(root / folder_name)
+        if candidate is not None:
+            yield candidate
+
+    if not _same_path(root, _DOWNLOAD_DIR):
+        return
+
+    for tool_dir in root.iterdir():
+        if not tool_dir.is_dir():
+            continue
+
+        candidate = register(tool_dir)
+        if candidate is not None:
+            yield candidate
+
+        extracted_dir = register(tool_dir / "extracted")
+        if extracted_dir is not None:
+            yield extracted_dir
+            for child in extracted_dir.iterdir():
+                nested = register(child)
+                if nested is not None:
+                    yield nested
+
+
 def _python_interpreter() -> Optional[str]:
     """Return an interpreter that can execute tool scripts."""
     if not getattr(sys, "frozen", False):
@@ -87,13 +132,11 @@ class ToolManager:
         for root in _SCAN_ROOTS:
             if not root.exists():
                 continue
-            for folder_name in folder_hints:
-                candidate = root / folder_name
-                if candidate.is_dir():
-                    for script in scripts:
-                        script_path = candidate / script
-                        if script_path.exists():
-                            return str(candidate), script
+            for candidate in _iter_scan_candidates(root, folder_hints):
+                for script in scripts:
+                    script_path = candidate / script
+                    if script_path.exists():
+                        return str(candidate), script
         return None
 
     def apply_scan_results(self, results: dict[str, Optional[tuple[str, str]]]) -> list[str]:

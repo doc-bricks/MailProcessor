@@ -219,6 +219,10 @@ class ToolsPage(QWizardPage):
         self._set_download_active(False)
 
     def _on_rescan(self):
+        # Während aktiver Downloads nicht neu aufbauen – Closures in _on_done würden
+        # auf bereits per deleteLater() entfernte Widgets zugreifen (RuntimeError).
+        if self._active_downloads > 0:
+            return
         self._run_scan()
         self._rebuild_ui()
 
