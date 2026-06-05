@@ -64,6 +64,7 @@ _STRINGS: dict[str, dict[str, str]] = {
     "autostart_note":        {"de": "(Startet MailProcessor beim Windows-Login automatisch)",
                               "en": "(Launches MailProcessor automatically on Windows login)"},
     "rescan_done":           {"de": "Scan abgeschlossen. Gefundene Tools wurden hinzugefügt.", "en": "Scan complete. Detected tools have been added."},
+    "rescan_none":           {"de": "Scan abgeschlossen. Keine neuen Tools gefunden.", "en": "Scan complete. No new tools found."},
     "remove_confirm":        {"de": "Tool aus MailProcessor entfernen? Die Tool-Dateien werden NICHT gelöscht.",
                               "en": "Remove tool from MailProcessor? The tool files will NOT be deleted."},
     "path_not_found":        {"de": "Kein gültiges Skript an diesem Pfad gefunden.",

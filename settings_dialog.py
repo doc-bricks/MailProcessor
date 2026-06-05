@@ -118,7 +118,6 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self._cfg = app_cfg
         self._tm = ToolManager(app_cfg)
-        self._changed = False
 
         self.setWindowTitle(tr("settings_title"))
         self.resize(680, 460)
@@ -215,9 +214,9 @@ class SettingsDialog(QDialog):
     def _on_rescan(self):
         results = self._tm.scan()
         added = self._tm.apply_scan_results(results)
-        self._changed = True
         self._refresh_table()
-        QMessageBox.information(self, tr("app_name"), tr("rescan_done"))
+        msg_key = "rescan_done" if added else "rescan_none"
+        QMessageBox.information(self, tr("app_name"), tr(msg_key))
 
     def _on_change_path(self):
         tid = self._selected_tool_id()
@@ -233,7 +232,6 @@ class SettingsDialog(QDialog):
         if not ok:
             QMessageBox.warning(self, tr("warning"), tr("path_not_found"))
             return
-        self._changed = True
         self._refresh_table()
 
     def _on_remove_tool(self):
@@ -246,7 +244,6 @@ class SettingsDialog(QDialog):
         )
         if reply == QMessageBox.StandardButton.Yes:
             self._tm.unregister(tid)
-            self._changed = True
             self._refresh_table()
 
     # ------------------------------------------------------------------
