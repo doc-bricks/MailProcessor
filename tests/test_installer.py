@@ -138,25 +138,39 @@ def test_rescan_blocked_while_download_active(qapp, tm):
     page._set_download_active(False)
 
 
-def test_download_callback_survives_page_rebuild(qapp, tm):
-    """Regression: _on_done/_on_progress dürfen keinen RuntimeError werfen wenn die UI
-    nach Download-Start neu aufgebaut wurde. Szenario: Download läuft, Nutzer navigiert
-    Back→Next (triggert initializePage → _rebuild_ui → deleteLater auf alten Widgets).
-    Der try/except-Guard in den Closures verhindert den Crash."""
+def test_download_callback_survives_page_rebuild(qapp, tm, monkeypatch):
+    """Regression: _on_done/_on_progress dürfen keine RuntimeError propagieren wenn Widgets
+    durch deleteLater() bereits zerstört wurden. Ohne den try/except-Guard in den Closures
+    würde thread.finished_signal.emit() eine RuntimeError aus status_label.setText() werfen."""
+    from installer import _DownloadThread
+    from PySide6.QtWidgets import QLabel, QPushButton, QCheckBox
+
     set_language("de")
     page = ToolsPage(tm)
     page.initializePage()
 
-    # Aktiver Download, dann Back→Next-Navigation (initializePage ist nicht geblockt)
-    page._set_download_active(True)
-    page.initializePage()         # löst deleteLater() auf alten Widgets aus
-    qapp.processEvents()          # verarbeitet ausstehende Qt-Events
+    # Thread-Start unterdrücken — kein echter Hintergrund-Thread nötig
+    monkeypatch.setattr(_DownloadThread, "start", lambda self: None)
 
-    # Seite bleibt nach dem Rebuild vollständig nutzbar
-    assert page.layout() is not None
-    assert page._checkboxes
+    # Echte Widgets: _start_download greift in den ersten Zeilen sofort auf sie zu
+    label = QLabel()
+    btn = QPushButton()
+    cb = QCheckBox()
 
-    page._set_download_active(False)
+    tool_id = "universal_docs_grabber"
+    page._start_download(tool_id, label, btn, cb)
+    thread = page._threads[-1]
+
+    # Widgets zerstören — simuliert UI-Rebuild durch Back→Next-Navigation
+    label.deleteLater()
+    btn.deleteLater()
+    cb.deleteLater()
+    qapp.processEvents()
+
+    # Fortschritts- und Abschluss-Callbacks dürfen keine RuntimeError propagieren
+    thread.progress.emit(50)           # _on_progress auf zerstörtem label
+    thread.finished_signal.emit("")    # _on_done Erfolgs-Pfad auf zerstörten Widgets
+    thread.finished_signal.emit("err") # _on_done Fehler-Pfad auf zerstörten Widgets
 
 
 def test_paths_page_requires_manual_paths_before_completion(qapp, tm, tmp_path):

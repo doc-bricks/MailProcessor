@@ -194,6 +194,12 @@ class ToolsPage(QWizardPage):
                 return  # Widgets wurden durch UI-Neuerstellung (Back→Next) gelöscht
 
         def _on_done(err: str) -> None:
+            # _scan_results außerhalb des try-Blocks: Widget-RuntimeError darf die
+            # Registrierung nicht still überspringen.
+            if not err:
+                t = self._tm.cfg.tools.get(tool_id)
+                if t and t.path and t.main_script:
+                    self._scan_results[tool_id] = (t.path, t.main_script)
             try:
                 if err:
                     status_label.setText(f"  ✗ {tr('download_error', err)}")
@@ -203,10 +209,6 @@ class ToolsPage(QWizardPage):
                     status_label.setText(f"  ✓ {tr('download_ok')}")
                     status_label.setStyleSheet("color: green; font-size: 11px;")
                     cb.setChecked(True)
-                    # Update scan result so _on_finish can register the tool
-                    t = self._tm.cfg.tools.get(tool_id)
-                    if t and t.path and t.main_script:
-                        self._scan_results[tool_id] = (t.path, t.main_script)
             except RuntimeError:
                 return  # Widgets wurden durch UI-Neuerstellung (Back→Next) gelöscht
 
