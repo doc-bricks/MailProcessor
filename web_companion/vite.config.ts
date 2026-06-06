@@ -1,30 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+
+// NOTE: vite-plugin-pwa removed to avoid build collision with static public/sw.js
+// and public/manifest.webmanifest. The static shell (public/ dir) is the single
+// source of truth until npm install + a real build run is set up on Mac Studio.
+// Re-enabling vite-plugin-pwa requires: remove public/sw.js, public/manifest.webmanifest,
+// and the manual registerServiceWorker script from index.html first.
 
 export default defineConfig({
   plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'script',
-      manifest: {
-        id: 'mailprocessor-companion',
-        name: 'MailProcessor Companion',
-        short_name: 'MailProcessor',
-        description: 'Mobile Companion für MailProcessor',
-        theme_color: '#1E78C8',
-        background_color: '#ffffff',
-        display: 'standalone',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
-        ]
-      }
-    })
+    react()
   ],
   server: { host: true, port: 5173 }
 })
