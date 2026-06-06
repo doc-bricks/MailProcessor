@@ -13,7 +13,7 @@
 | 2. Austauschformat | IN ARBEIT | `mailprocessor-suite-v1.json` aus Desktop importieren |
 | 3. Lokaler Speicher | OFFEN | IndexedDB (idb/dexie) statt SQLite |
 | 4. UI-Screens | OFFEN | Mobile Workflows priorisieren |
-| 5. PWA-Manifest + Icons | OFFEN | manifest.webmanifest + Icons in public/ |
+| 5. PWA-Manifest + Icons | DONE | manifest.webmanifest + sw.js + offline.html in public/; 15/15 Tests grün |
 | 6. Capacitor-Wrapper | OFFEN | `npx cap add android` (Xcode für iOS noch nicht da) |
 | 7. Build verifizieren | OFFEN | `npm run build && npx cap sync` |
 

@@ -7,15 +7,22 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'script',
       manifest: {
+        id: 'mailprocessor-companion',
         name: 'MailProcessor Companion',
         short_name: 'MailProcessor',
         description: 'Mobile Companion für MailProcessor',
-        theme_color: '#1f2937',
+        theme_color: '#1E78C8',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
-        icons: []
+        scope: '/',
+        icons: [
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+        ]
       }
     })
   ],
