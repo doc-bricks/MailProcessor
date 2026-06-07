@@ -36,15 +36,25 @@ describe('PWA manifest', () => {
 });
 
 describe('PWA service worker', () => {
+  const sw = readFileSync(join(pub, 'sw.js'), 'utf8');
+
   test('sw.js exists in public/', () => {
     assert.ok(existsSync(join(pub, 'sw.js')), 'public/sw.js missing');
   });
 
   test('sw.js handles install and fetch events', () => {
-    const src = readFileSync(join(pub, 'sw.js'), 'utf8');
-    assert.ok(src.includes('install'), 'install event missing');
-    assert.ok(src.includes('fetch'), 'fetch event missing');
-    assert.ok(src.includes('offline'), 'offline URL reference missing');
+    assert.ok(sw.includes('install'), 'install event missing');
+    assert.ok(sw.includes('fetch'), 'fetch event missing');
+    assert.ok(sw.includes('offline'), 'offline URL reference missing');
+  });
+
+  test('sw.js activate handler cleans up old caches', () => {
+    assert.ok(sw.includes('caches.keys()'), 'activate: caches.keys() missing — old caches not cleaned up');
+    assert.ok(sw.includes('caches.delete('), 'activate: caches.delete() missing — old caches not deleted');
+  });
+
+  test('sw.js activate handler calls clients.claim()', () => {
+    assert.ok(sw.includes('clients.claim()'), 'clients.claim() missing in activate handler');
   });
 });
 
@@ -92,5 +102,35 @@ describe('PWA icon files', () => {
 
   test('apple-touch-icon.png exists', () => {
     assert.ok(existsSync(join(pub, 'apple-touch-icon.png')), 'apple-touch-icon.png missing from public/');
+  });
+
+  test('icon-maskable-192.png exists in public/', () => {
+    assert.ok(existsSync(join(pub, 'icon-maskable-192.png')), 'icon-maskable-192.png missing — Android adaptive icons require maskable variant in public/');
+  });
+
+  test('icon-maskable-512.png exists in public/', () => {
+    assert.ok(existsSync(join(pub, 'icon-maskable-512.png')), 'icon-maskable-512.png missing — Android adaptive icons require maskable variant in public/');
+  });
+});
+
+describe('PWA manifest maskable icons', () => {
+  const raw = readFileSync(join(pub, 'manifest.webmanifest'), 'utf8');
+  const m = JSON.parse(raw);
+
+  test('manifest has maskable icon entry', () => {
+    assert.ok(m.icons.some(i => i.purpose === 'maskable'), 'no maskable icon in manifest — Android adaptive icons broken');
+  });
+
+  test('manifest has maskable-192 entry', () => {
+    assert.ok(
+      m.icons.some(i => i.purpose === 'maskable' && i.sizes === '192x192'),
+      'maskable 192x192 icon missing from manifest'
+    );
+  });
+
+  test('sw.js ASSETS includes maskable icons', () => {
+    const sw = readFileSync(join(pub, 'sw.js'), 'utf8');
+    assert.ok(sw.includes('icon-maskable-192.png'), 'sw.js ASSETS missing icon-maskable-192.png');
+    assert.ok(sw.includes('icon-maskable-512.png'), 'sw.js ASSETS missing icon-maskable-512.png');
   });
 });
