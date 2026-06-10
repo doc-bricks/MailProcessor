@@ -32,3 +32,19 @@ Local verification:
 python -m pytest -q
 python -m compileall .
 ```
+
+## Audience
+
+- Windows users running multiple Universal Mail Tools who want a single launch point
+- Privacy-conscious home users and small business owners managing IMAP mail locally
+- Developers building on top of the doc-bricks Universal Mail Tools suite
+
+## Search Phrases
+
+- MailProcessor Windows tray mail launcher
+- doc-bricks MailProcessor PySide6
+- local-first IMAP mail tools launcher
+- Universal Mail Cleaner Docs Grabber Invoice Mail hub
+- Windows mail tool manager Python desktop
+
+## Last-checked: 2026-06-10
