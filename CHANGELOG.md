@@ -7,6 +7,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Documentation
+
+- Standardized `llms.txt`: `## Last-checked:` header at line 1, `## Search Phrases` as fenced code block.
+- Updated README test count: 32 → 41 Pytest tests.
+- Added `web_companion/icons/` to `.gitignore` (PWA source icon copies; tracked copies live in `web_companion/public/`).
+
 ### Added
 - PWA installability for `web_companion/`: `manifest.webmanifest` with `id`, `scope`, brand `theme_color` `#1E78C8`, 192 and 512 icon entries; pre-build `sw.js` shell with offline fallback; `offline.html` German offline page; 15 Node.js PWA tests in `tests/pwa.test.mjs`; test script `npm test` added to `package.json`.
 - Read-only Desktop-Snapshot export `mailprocessor-suite-v1.json` with redacted path hints for the companion workflow.
@@ -15,6 +21,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `llms.txt` with machine-readable project context for the doc-bricks mail suite.
 
 ### Changed
+- MailProcessor nutzt jetzt ein verifiziertes eigenes Tray-/Build-Icon statt still auf das generische Fallback zu rutschen; neue Regressionstests sichern Dateiladung, ICO-Größen und Gleichstand von `resources/icon.ico` und `MailProcessor.ico`.
 - Load tray icon from `resources/icon.ico` with a fallback to the existing generated envelope icon.
 - Regenerate `resources/icon.ico` in 16x16, 32x32, and 256x256 sizes via Pillow.
 - Validate and repair Windows autostart registry entry during startup so it points to the current executable.

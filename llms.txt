@@ -1,3 +1,5 @@
+## Last-checked: 2026-06-11
+
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
@@ -41,10 +43,10 @@ python -m compileall .
 
 ## Search Phrases
 
-- MailProcessor Windows tray mail launcher
-- doc-bricks MailProcessor PySide6
-- local-first IMAP mail tools launcher
-- Universal Mail Cleaner Docs Grabber Invoice Mail hub
-- Windows mail tool manager Python desktop
-
-## Last-checked: 2026-06-10
+```text
+MailProcessor Windows tray mail launcher
+doc-bricks MailProcessor PySide6
+local-first IMAP mail tools launcher
+Universal Mail Cleaner Docs Grabber Invoice Mail hub
+Windows mail tool manager Python desktop
+```

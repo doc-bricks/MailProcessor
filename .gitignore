@@ -28,3 +28,6 @@ DECISIONS.md
 PORTIERUNGSPLAN.md
 TODO.md
 DONE.md
+
+# Build-Artefakte und Quell-Icons fuer PWA (Kopien in web_companion/public/ werden getrackt)
+web_companion/icons/
