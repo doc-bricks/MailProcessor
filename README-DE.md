@@ -1,5 +1,9 @@
 # MailProcessor
 
+<p align="center">
+  <img src="assets/banner.svg" alt="MailProcessor Banner" width="100%" />
+</p>
+
 System-Tray-Launcher für die drei Universal Mail Tools.
 
 > **English documentation:** [README.md](README.md)

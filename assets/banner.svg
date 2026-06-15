@@ -1,0 +1,304 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="100%" height="auto" style="background:#051015;">
+  <defs>
+    <!-- Fonts -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&amp;display=swap');
+      .text-title {
+        font-family: 'Outfit', 'Segoe UI', sans-serif;
+        font-weight: 900;
+        font-size: 60px;
+        fill: #ffffff;
+      }
+      .text-title-accent {
+        fill: #00e5cc;
+        filter: drop-shadow(0 0 8px rgba(0, 229, 204, 0.4));
+      }
+      .text-tagline {
+        font-family: 'Outfit', 'Segoe UI', sans-serif;
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: 5px;
+        fill: #64a8a0;
+      }
+      
+      /* Animation styles */
+      @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; filter: drop-shadow(0 0 8px #00e5cc); }
+      }
+      @keyframes pulse-eye {
+        0%, 100% { r: 5px; opacity: 0.7; }
+        50% { r: 7px; opacity: 1; }
+      }
+      @keyframes flow {
+        to { stroke-dashoffset: -40; }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+      }
+      @keyframes scan {
+        0% { transform: translateY(-10px); opacity: 0; }
+        15% { opacity: 0.8; }
+        85% { opacity: 0.8; }
+        100% { transform: translateY(130px); opacity: 0; }
+      }
+      
+      .animated-eye-glow {
+        animation: pulse 3s infinite ease-in-out;
+      }
+      .animated-eye-core {
+        animation: pulse-eye 3s infinite ease-in-out;
+      }
+      .flow-trace {
+        stroke-dasharray: 10 30;
+        animation: flow 4s infinite linear;
+      }
+      .floating-cyborg {
+        animation: float 6s infinite ease-in-out;
+        transform-origin: 350px 170px;
+      }
+    </style>
+
+    <!-- Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051015" />
+      <stop offset="50%" stop-color="#0a1628" />
+      <stop offset="100%" stop-color="#030b10" />
+    </linearGradient>
+
+    <linearGradient id="envelope-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2d3d" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0d1821" stop-opacity="0.95" />
+    </linearGradient>
+
+    <linearGradient id="cyan-teal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5cc" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <!-- Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00e5cc" stroke-width="1" opacity="0.03" />
+      <circle cx="0" cy="0" r="1" fill="#00e5cc" opacity="0.1" />
+    </pattern>
+    
+    <!-- Hex Pattern -->
+    <pattern id="hex-grid" width="56" height="97" patternUnits="userSpaceOnUse" patternTransform="scale(0.5)">
+      <path d="M28 0 L56 16.16 v32.32 L28 64.64 L0 48.48 V16.16 Z" fill="none" stroke="#10b981" stroke-width="1" opacity="0.04"/>
+      <path d="M28 97 L56 80.84 v-32.32 L28 32.36 L0 48.52 V80.8 Z" fill="none" stroke="#10b981" stroke-width="1" opacity="0.04"/>
+    </pattern>
+
+    <!-- Glow Filter -->
+    <filter id="glow-heavy" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="cyan-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="340" fill="url(#bg-grad)" />
+  <rect width="1200" height="340" fill="url(#grid)" />
+  
+  <!-- Right Side Hex Background -->
+  <rect x="700" y="0" width="500" height="340" fill="url(#hex-grid)" opacity="0.7" />
+  <!-- Left Side Hex Background (faint) -->
+  <rect x="0" y="0" width="500" height="340" fill="url(#hex-grid)" opacity="0.2" />
+
+  <!-- Background Circuit Graphics (Deep layer, low opacity) -->
+  <g opacity="0.12" stroke="#00e5cc" stroke-width="1" fill="none">
+    <!-- Left background circuit lines -->
+    <path d="M-50,100 L150,100 L200,150 L200,250 L180,270" />
+    <circle cx="200" cy="150" r="3" fill="#00e5cc" />
+    <circle cx="180" cy="270" r="3" fill="#00e5cc" />
+    <path d="M100,50 L50,100 L50,220 L100,270 L280,270" />
+    <circle cx="100" cy="50" r="3" fill="#00e5cc" />
+    <circle cx="50" cy="100" r="3" fill="#00e5cc" />
+    <circle cx="280" cy="270" r="3" fill="#00e5cc" />
+    
+    <!-- Right background circuit lines -->
+    <path d="M1050,80 L950,80 L900,130 L900,220 L950,270 L1100,270" />
+    <circle cx="900" cy="130" r="3" fill="#00e5cc" />
+    <circle cx="950" cy="270" r="3" fill="#00e5cc" />
+    <path d="M1150,150 L1000,150 L960,190 L960,310" />
+    <circle cx="960" cy="190" r="3" fill="#00e5cc" />
+  </g>
+
+  <!-- Animated Data Flows along some background lines -->
+  <g opacity="0.25" stroke="#00e5cc" stroke-width="1.5" fill="none">
+    <path d="M100,50 L50,100 L50,220 L100,270 L280,270" class="flow-trace" />
+    <path d="M1050,80 L950,80 L900,130 L900,220 L950,270" class="flow-trace" />
+  </g>
+
+  <!-- Main Cyborg Group (Interactive float effect) -->
+  <g class="floating-cyborg">
+    <!-- Circuit lines radiating from the envelope -->
+    <!-- Top-Left trace -->
+    <path d="M260,110 L200,70 L110,70" fill="none" stroke="#00e5cc" stroke-width="2" opacity="0.6" />
+    <path d="M260,110 L200,70 L110,70" fill="none" stroke="#10b981" stroke-width="2" class="flow-trace" opacity="0.8" />
+    <circle cx="110" cy="70" r="4" fill="#00e5cc" filter="url(#cyan-glow)" />
+    
+    <!-- Bottom-Left trace -->
+    <path d="M260,230 L210,270 L130,270" fill="none" stroke="#00e5cc" stroke-width="2" opacity="0.6" />
+    <path d="M260,230 L210,270 L130,270" fill="none" stroke="#10b981" stroke-width="2" class="flow-trace" opacity="0.8" />
+    <circle cx="130" cy="270" r="4" fill="#10b981" filter="url(#cyan-glow)" />
+    
+    <!-- Top-Right trace -->
+    <path d="M440,110 L490,70 L580,70" fill="none" stroke="#00e5cc" stroke-width="2" opacity="0.6" />
+    <path d="M440,110 L490,70 L580,70" fill="none" stroke="#10b981" stroke-width="2" class="flow-trace" opacity="0.8" />
+    <circle cx="580" cy="70" r="4" fill="#00e5cc" filter="url(#cyan-glow)" />
+    
+    <!-- Bottom-Right trace -->
+    <path d="M440,230 L490,270 L560,270" fill="none" stroke="#00e5cc" stroke-width="2" opacity="0.6" />
+    <path d="M440,230 L490,270 L560,270" fill="none" stroke="#10b981" stroke-width="2" class="flow-trace" opacity="0.8" />
+    <circle cx="560" cy="270" r="4" fill="#10b981" filter="url(#cyan-glow)" />
+
+    <!-- Additional minor circuit traces -->
+    <path d="M260,170 L180,170 M440,170 L500,170" fill="none" stroke="#00e5cc" stroke-width="1.5" opacity="0.4" stroke-dasharray="4 4" />
+    <circle cx="180" cy="170" r="3" fill="#00e5cc" opacity="0.7" />
+    <circle cx="500" cy="170" r="3" fill="#00e5cc" opacity="0.7" />
+
+    <!-- Envelope Shadow -->
+    <rect x="256" y="106" width="188" height="128" rx="10" fill="#00e5cc" opacity="0.08" filter="url(#glow-heavy)" />
+
+    <!-- Envelope Base (Cyborg Base) -->
+    <rect x="260" y="110" width="180" height="120" rx="8" fill="url(#envelope-grad)" stroke="#1e293b" stroke-width="2" />
+
+    <!-- Right-half Cybertronic detailing (Robotic texture underlay) -->
+    <g opacity="0.85">
+      <!-- Cyber panels on the right side of the envelope -->
+      <path d="M350,110 L440,110 L440,230 L350,230 Z" fill="#0b1724" />
+      <!-- Circuit board patterns on right side -->
+      <path d="M360,125 L385,125 L395,135 L430,135" fill="none" stroke="#00e5cc" stroke-width="1.5" opacity="0.6" />
+      <circle cx="430" cy="135" r="2" fill="#00e5cc" />
+      
+      <path d="M355,190 L390,190 L405,205 L425,205" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.6" />
+      <circle cx="425" cy="205" r="2" fill="#10b981" />
+
+      <!-- Horizontal data slots/glowing bars on right side -->
+      <rect x="370" y="150" width="50" height="4" rx="2" fill="#00e5cc" opacity="0.8" filter="url(#cyan-glow)" />
+      <rect x="380" y="165" width="40" height="4" rx="2" fill="#10b981" opacity="0.8" />
+      <rect x="375" y="180" width="45" height="2" rx="1" fill="#00e5cc" opacity="0.5" />
+      
+      <!-- Tech Grid or Micro-Hex in lower right -->
+      <path d="M410,210 L425,210 L430,215 L430,225" fill="none" stroke="#00e5cc" stroke-width="1" opacity="0.7" />
+    </g>
+
+    <!-- Translucent Envelope front face (Organic half covers left, cyber highlights on right) -->
+    <!-- Front flap and folds of the envelope, styled futuristically -->
+    <!-- Left organic side body color (slightly translucent light blue-gray) -->
+    <path d="M260,110 L350,110 L350,230 L260,230 Z" fill="#b8d4e8" fill-opacity="0.1" />
+    
+    <!-- Outer Circuit Border (cyan circuit-board frame border, dashed/segmented) -->
+    <!-- Top edge -->
+    <path d="M260,110 L310,110 M330,110 L400,110 M420,110 L440,110" fill="none" stroke="#00e5cc" stroke-width="3" stroke-linecap="round" filter="url(#cyan-glow)" />
+    <!-- Bottom edge -->
+    <path d="M260,230 L290,230 M310,230 L380,230 M400,230 L440,230" fill="none" stroke="#00e5cc" stroke-width="3" stroke-linecap="round" filter="url(#cyan-glow)" />
+    <!-- Left edge -->
+    <path d="M260,110 L260,150 M260,170 L260,230" fill="none" stroke="#00e5cc" stroke-width="3" stroke-linecap="round" filter="url(#cyan-glow)" />
+    <!-- Right edge -->
+    <path d="M440,110 L440,160 M440,180 L440,230" fill="none" stroke="#00e5cc" stroke-width="3" stroke-linecap="round" filter="url(#cyan-glow)" />
+
+    <!-- Corner accent brackets -->
+    <path d="M270,110 L260,110 L260,120" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    <path d="M260,220 L260,230 L270,230" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    <path d="M430,110 L440,110 L440,120" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+    <path d="M440,220 L440,230 L430,230" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Envelope Flap (Triangular top flap) -->
+    <!-- Left flap half: (260, 110) to (350, 165) to (350, 110) -->
+    <path d="M260,110 L350,165 L350,110 Z" fill="#b8d4e8" fill-opacity="0.15" stroke="#00e5cc" stroke-width="1.5" stroke-opacity="0.5" />
+    
+    <!-- Right flap half (cybertronic): (350, 110) to (350, 165) to (440, 110) -->
+    <!-- Shows open circuit pathways -->
+    <path d="M350,110 L350,165 L440,110 Z" fill="#0e1f30" stroke="#10b981" stroke-width="1.5" />
+    <!-- Flap circuits -->
+    <path d="M365,125 L390,140 M380,120 L410,135" fill="none" stroke="#00e5cc" stroke-width="1.5" opacity="0.8" />
+    <circle cx="390" cy="140" r="2.5" fill="#00e5cc" filter="url(#cyan-glow)" />
+    <circle cx="410" cy="135" r="2.5" fill="#10b981" filter="url(#cyan-glow)" />
+
+    <!-- Antenna/WiFi Symbol at top-right corner (around x=440, y=110) -->
+    <!-- Base node on envelope corner -->
+    <circle cx="440" cy="110" r="3" fill="#ffffff" />
+    <!-- Antenna staff -->
+    <line x1="440" y1="110" x2="455" y2="95" stroke="#ffffff" stroke-width="2" />
+    <circle cx="455" cy="95" r="2" fill="#00e5cc" filter="url(#cyan-glow)" />
+    <!-- WiFi/signal arcs -->
+    <path d="M452,87 A12,12 0 0,1 467,102" fill="none" stroke="#00e5cc" stroke-width="1.5" stroke-linecap="round" opacity="0.8" />
+    <path d="M457,80 A22,22 0 0,1 479,102" fill="none" stroke="#00e5cc" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+
+    <!-- Glowing CYBORG EYE (Left center, around x=310, y=170) -->
+    <g transform="translate(310, 170)">
+      <!-- Cybernetic eye backing plate -->
+      <circle cx="0" cy="0" r="26" fill="#051015" stroke="#1e293b" stroke-width="1.5" />
+      <path d="M-22,0 A22,22 0 0,1 22,0" fill="none" stroke="#10b981" stroke-width="1" opacity="0.6" stroke-dasharray="2 2" />
+      
+      <!-- Outer dashed ring -->
+      <circle cx="0" cy="0" r="18" fill="none" stroke="#00e5cc" stroke-width="2" stroke-dasharray="6 3" class="animated-eye-glow" />
+      
+      <!-- Inner solid ring -->
+      <circle cx="0" cy="0" r="11" fill="none" stroke="#00e5cc" stroke-width="1" opacity="0.8" />
+      
+      <!-- Center glowing iris and pupil -->
+      <circle cx="0" cy="0" r="6" fill="#00f5e0" class="animated-eye-glow" filter="url(#cyan-glow)" />
+      <circle cx="0" cy="0" r="2.5" fill="#ffffff" class="animated-eye-core" />
+      
+      <!-- Targeting crosshair marks -->
+      <line x1="-14" y1="0" x2="-8" y2="0" stroke="#00e5cc" stroke-width="1" opacity="0.7" />
+      <line x1="8" y1="0" x2="14" y2="0" stroke="#00e5cc" stroke-width="1" opacity="0.7" />
+      <line x1="0" y1="-14" x2="0" y2="-8" stroke="#00e5cc" stroke-width="1" opacity="0.7" />
+      <line x1="0" y1="8" x2="0" y2="14" stroke="#00e5cc" stroke-width="1" opacity="0.7" />
+    </g>
+
+    <!-- UI Overlay Scan Line Effect (moving up/down on left half) -->
+    <g clip-path="url(#envelope-left-clip)">
+      <clipPath id="envelope-left-clip">
+        <rect x="260" y="110" width="90" height="120" rx="8" />
+      </clipPath>
+      <rect x="250" y="110" width="110" height="2" fill="#00e5cc" opacity="0.8" filter="url(#cyan-glow)" style="animation: scan 4.5s infinite linear;" />
+    </g>
+  </g>
+
+  <!-- Wordmark Text (Right Side) -->
+  <!-- Subtle ambient cyan glow behind the text -->
+  <circle cx="780" cy="160" r="120" fill="#00e5cc" opacity="0.06" filter="url(#glow-heavy)" />
+  
+  <g transform="translate(780, 170)">
+    <!-- Main Title "MailProcessor" -->
+    <text text-anchor="middle" class="text-title">
+      <tspan fill="#ffffff">Mail</tspan><tspan class="text-title-accent">Processor</tspan>
+    </text>
+    
+    <!-- Tagline below -->
+    <text y="42" text-anchor="middle" class="text-tagline">SMART TRAY LAUNCHER FOR MAIL TOOLS</text>
+    
+    <!-- Underline accent or tech line -->
+    <path d="M-180,15 L180,15" fill="none" stroke="url(#cyan-teal-grad)" stroke-width="1.5" opacity="0.3" />
+    <circle cx="-180" cy="15" r="2" fill="#00e5cc" opacity="0.6" />
+    <circle cx="0" cy="15" r="3" fill="#00e5cc" opacity="0.8" filter="url(#cyan-glow)" />
+    <circle cx="180" cy="15" r="2" fill="#10b981" opacity="0.6" />
+  </g>
+
+  <!-- Glowing tech accents at corners of the banner (Frame/Border) -->
+  <g stroke="#00e5cc" stroke-width="1" opacity="0.4" fill="none">
+    <!-- Top-Left corner bracket -->
+    <path d="M20,40 L20,20 L40,20" />
+    <!-- Bottom-Left corner bracket -->
+    <path d="M20,300 L20,320 L40,320" />
+    <!-- Top-Right corner bracket -->
+    <path d="M1180,40 L1180,20 L1160,20" />
+    <!-- Bottom-Right corner bracket -->
+    <path d="M1180,300 L1180,320 L1160,320" />
+  </g>
+</svg>
