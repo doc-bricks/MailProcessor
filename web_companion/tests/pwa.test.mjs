@@ -134,3 +134,53 @@ describe('PWA manifest maskable icons', () => {
     assert.ok(sw.includes('icon-maskable-512.png'), 'sw.js ASSETS missing icon-maskable-512.png');
   });
 });
+
+// --- iOS PWA-Härtung (P4b, 2026-06-16) ---
+describe('iOS PWA-Härtung', () => {
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
+  const sw = readFileSync(join(pub, 'sw.js'), 'utf8');
+  const css = readFileSync(join(root, 'src', 'index.css'), 'utf8');
+
+  test('index.html viewport enthält viewport-fit=cover', () => {
+    assert.ok(html.includes('viewport-fit=cover'), 'viewport-fit=cover fehlt');
+  });
+
+  test('index.html apple-touch-icon zeigt auf apple-touch-icon-180.png', () => {
+    assert.ok(html.includes('apple-touch-icon-180.png'), 'apple-touch-icon-180.png nicht verlinkt');
+    assert.ok(!html.includes('apple-touch-icon.png"'), 'alter apple-touch-icon.png Link noch vorhanden');
+  });
+
+  test('index.html hat apple-mobile-web-app-title', () => {
+    assert.ok(html.includes('apple-mobile-web-app-title'), 'apple-mobile-web-app-title fehlt');
+  });
+
+  test('index.html hat apple-mobile-web-app-status-bar-style', () => {
+    assert.ok(html.includes('apple-mobile-web-app-status-bar-style'), 'apple-mobile-web-app-status-bar-style fehlt');
+  });
+
+  test('index.html setzt KEIN apple-mobile-web-app-capable (deprecated seit iOS 11.3)', () => {
+    assert.ok(!html.includes('apple-mobile-web-app-capable'), 'apple-mobile-web-app-capable ist deprecated und darf nicht gesetzt werden');
+  });
+
+  test('apple-touch-icon-180.png existiert in public/', () => {
+    assert.ok(existsSync(join(pub, 'apple-touch-icon-180.png')), 'apple-touch-icon-180.png fehlt in public/');
+  });
+
+  test('sw.js enthält apple-touch-icon-180.png in ASSETS', () => {
+    assert.ok(sw.includes('apple-touch-icon-180.png'), 'apple-touch-icon-180.png fehlt in sw.js ASSETS');
+  });
+
+  test('sw.js CACHE_NAME ist v2 (nach iOS-Härtung)', () => {
+    assert.ok(sw.includes('mailprocessor-v2'), 'SW CACHE_NAME wurde nicht auf v2 erhöht');
+    assert.ok(!sw.includes('mailprocessor-v1'), 'alter CACHE_NAME mailprocessor-v1 noch vorhanden');
+  });
+
+  test('src/index.css enthält safe-area-inset für .shell', () => {
+    assert.ok(css.includes('safe-area-inset'), 'safe-area-inset CSS fehlt');
+    assert.ok(css.includes('.shell'), '.shell Klasse fehlt in CSS');
+  });
+
+  test('src/index.css enthält safe-area-inset-bottom für .toast', () => {
+    assert.ok(css.includes('safe-area-inset-bottom'), 'safe-area-inset-bottom fehlt in CSS');
+  });
+});

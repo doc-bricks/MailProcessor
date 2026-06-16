@@ -1,13 +1,13 @@
 // MailProcessor Companion — Pre-build SW shell
 // NOTE: Once `npm run build` runs, vite-plugin-pwa generates a full SW that
 //       supersedes this file. Do NOT add complex caching logic here.
-const CACHE_NAME = 'mailprocessor-v1';
+const CACHE_NAME = 'mailprocessor-v2';
 const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
-      cache.addAll([OFFLINE_URL, '/', '/icon-192.png', '/icon-512.png', '/icon-maskable-192.png', '/icon-maskable-512.png'])
+      cache.addAll([OFFLINE_URL, '/', '/icon-192.png', '/icon-512.png', '/icon-maskable-192.png', '/icon-maskable-512.png', '/apple-touch-icon-180.png'])
     )
   );
   self.skipWaiting();
