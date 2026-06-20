@@ -70,7 +70,7 @@ class MailProcessorTray(QSystemTrayIcon):
         self.activated.connect(self._on_activated)
 
     def _build_menu(self):
-        menu = QMenu()
+        self._context_menu = QMenu()
 
         active = self._tm.active_tools()
         if active:
@@ -85,27 +85,27 @@ class MailProcessorTray(QSystemTrayIcon):
                 action.setToolTip(self._tm.tool_description(tid))
                 # Capture tid in closure
                 action.triggered.connect(lambda checked=False, t=tid: self._launch(t))
-                menu.addAction(action)
+                self._context_menu.addAction(action)
         else:
             no_tools = QAction(tr("no_tools"), self)
             no_tools.setEnabled(False)
-            menu.addAction(no_tools)
+            self._context_menu.addAction(no_tools)
 
-        menu.addSeparator()
+        self._context_menu.addSeparator()
         settings_action = QAction(tr("menu_settings"), self)
         settings_action.triggered.connect(self._open_settings)
-        menu.addAction(settings_action)
+        self._context_menu.addAction(settings_action)
 
         export_action = QAction(tr("menu_export_snapshot"), self)
         export_action.triggered.connect(self._export_snapshot)
-        menu.addAction(export_action)
+        self._context_menu.addAction(export_action)
 
-        menu.addSeparator()
+        self._context_menu.addSeparator()
         quit_action = QAction(tr("menu_quit"), self)
         quit_action.triggered.connect(QApplication.quit)
-        menu.addAction(quit_action)
+        self._context_menu.addAction(quit_action)
 
-        self.setContextMenu(menu)
+        self.setContextMenu(self._context_menu)
 
     def _launch(self, tool_id: str):
         err = self._tm.launch(tool_id)

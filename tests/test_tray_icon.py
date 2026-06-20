@@ -56,3 +56,41 @@ def test_runtime_icon_contains_expected_sizes():
     sizes = _read_ico_sizes(RESOURCE_ICON)
 
     assert {(16, 16), (32, 32), (48, 48), (256, 256)}.issubset(sizes)
+
+
+def test_pyside6_keeps_context_menu_alive_after_gc():
+    """Dokumentiert: PySide6 hält QMenu intern am Leben nach setContextMenu().
+
+    Auch ohne Python-Instanzvariable (lokale Variable) überlebt das QMenu gc.collect().
+    self._context_menu in _build_menu() ist dennoch best practice (defensives Hardening),
+    da das interne C++-Verhalten implementierungsabhängig ist.
+    """
+    import gc
+
+    from PySide6.QtWidgets import QMenu, QSystemTrayIcon
+
+    app = QApplication.instance() or QApplication([])
+    icon = QSystemTrayIcon()
+    local_menu = QMenu()
+    local_menu.addAction("MarkAction")
+    icon.setContextMenu(local_menu)
+    del local_menu
+    gc.collect()
+
+    result = icon.contextMenu()
+    assert result is not None, "PySide6 hält QMenu nach GC am Leben"
+    assert len(result.actions()) > 0, "Aktionen bleiben nach GC erhalten"
+
+
+def test_build_menu_stores_menu_as_instance_variable():
+    """_build_menu muss self._context_menu setzen damit Python-GC das QMenu nicht löscht."""
+    from config import AppConfig
+    from tray import MailProcessorTray
+
+    app = QApplication.instance() or QApplication([])
+    cfg = AppConfig()
+    tray_icon = MailProcessorTray(cfg)
+
+    assert hasattr(tray_icon, "_context_menu"), "_context_menu muss als Instanzvariable gehalten werden"
+    assert tray_icon._context_menu is not None
+    assert tray_icon._context_menu is tray_icon.contextMenu()
