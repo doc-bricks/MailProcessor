@@ -184,3 +184,14 @@ describe('iOS PWA-Härtung', () => {
     assert.ok(css.includes('safe-area-inset-bottom'), 'safe-area-inset-bottom fehlt in CSS');
   });
 });
+
+// ── Bugsweep Lauf 19 — 2026-06-20 ────────────────────────────────────
+describe('Bug #1 Regression — manifest.webmanifest lang:de', () => {
+  const raw = readFileSync(join(pub, 'manifest.webmanifest'), 'utf8');
+  const m = JSON.parse(raw);
+
+  test('manifest hat lang-Feld "de"', () => {
+    assert.equal(m.lang, 'de',
+      'manifest.webmanifest fehlt lang:"de" — Accessibility + Codebase-Konsistenz erfordern explizites lang-Feld');
+  });
+});

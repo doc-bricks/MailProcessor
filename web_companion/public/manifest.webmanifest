@@ -5,6 +5,7 @@
   "description": "Mobile Companion für MailProcessor",
   "theme_color": "#1E78C8",
   "background_color": "#ffffff",
+  "lang": "de",
   "display": "standalone",
   "start_url": "/",
   "scope": "/",
