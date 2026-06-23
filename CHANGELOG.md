@@ -7,6 +7,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Security
+
+- Raised the MailProcessor companion Vite dev-server dependency from `^6.0.3` to `^6.4.3` to pick up the Windows dev-server path and editor middleware security fixes.
+
 ### Documentation
 
 - Standardized `llms.txt`: `## Last-checked:` header at line 1, `## Search Phrases` as fenced code block.
@@ -21,6 +25,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `llms.txt` with machine-readable project context for the doc-bricks mail suite.
 
 ### Changed
+- Fallback für `LOCALAPPDATA` gehärtet: Leere oder relative Werte schreiben Konfiguration und GitHub-Tool-Downloads nicht mehr relativ zum Arbeitsordner, sondern sauber unter `Path.home()/MailProcessor`; neue Regressionstests decken beide Fehlkonfigurationen ab.
 - MailProcessor nutzt jetzt ein verifiziertes eigenes Tray-/Build-Icon statt still auf das generische Fallback zu rutschen; neue Regressionstests sichern Dateiladung, ICO-Größen und Gleichstand von `resources/icon.ico` und `MailProcessor.ico`.
 - Load tray icon from `resources/icon.ico` with a fallback to the existing generated envelope icon.
 - Regenerate `resources/icon.ico` in 16x16, 32x32, and 256x256 sizes via Pillow.
