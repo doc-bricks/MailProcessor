@@ -11,9 +11,18 @@ from pathlib import Path
 from config import AppConfig
 from tool_manager import TOOL_DEFINITIONS, ToolManager
 
+
+def _safe_localappdata_root() -> Path:
+    raw_local_appdata = os.environ.get("LOCALAPPDATA")
+    base_dir = Path(raw_local_appdata) if raw_local_appdata else Path.home()
+    if not base_dir.is_absolute():
+        base_dir = Path.home()
+    return base_dir
+
+
 SNAPSHOT_SCHEMA = "mailprocessor-suite-v1"
 APP_NAME = "MailProcessor"
-LOCALAPPDATA_ROOT = Path(os.environ.get("LOCALAPPDATA", Path.home()))
+LOCALAPPDATA_ROOT = _safe_localappdata_root()
 APP_ROOT = Path(__file__).parent
 
 

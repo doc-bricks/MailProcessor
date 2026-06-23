@@ -116,3 +116,15 @@ def test_get_tool_auto_creates():
     assert t.enabled is False
     # Second call returns same object
     assert cfg.get_tool("new_tool") is t
+
+
+def test_app_data_dir_falls_back_to_home_when_localappdata_is_empty(monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", "")
+
+    assert cfg_module.app_data_dir() == Path.home() / "MailProcessor"
+
+
+def test_app_data_dir_falls_back_to_home_when_localappdata_is_relative(monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", "relative-localappdata")
+
+    assert cfg_module.app_data_dir() == Path.home() / "MailProcessor"

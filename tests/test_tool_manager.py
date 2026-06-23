@@ -163,3 +163,13 @@ def test_scan_finds_downloaded_tool_inside_github_extract_dir(tm, tmp_path, monk
         str(extracted),
         "mail_imap_cleaner_v1.py",
     )
+
+
+def test_download_dir_falls_back_to_home_when_localappdata_is_relative(monkeypatch):
+    import importlib
+    import tool_manager
+
+    monkeypatch.setenv("LOCALAPPDATA", "relative-localappdata")
+    reloaded = importlib.reload(tool_manager)
+
+    assert reloaded._DOWNLOAD_DIR == Path.home() / "MailProcessor" / "tools"

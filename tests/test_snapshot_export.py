@@ -4,7 +4,12 @@ from datetime import datetime
 from pathlib import Path
 
 from config import AppConfig
-from snapshot_export import SNAPSHOT_SCHEMA, build_snapshot_payload, write_snapshot
+from snapshot_export import (
+    SNAPSHOT_SCHEMA,
+    _safe_localappdata_root,
+    build_snapshot_payload,
+    write_snapshot,
+)
 
 
 def test_build_snapshot_payload_redacts_private_paths_and_reports_statuses(
@@ -93,3 +98,15 @@ def test_write_snapshot_writes_utf8_json_without_private_absolute_paths(
     assert "Lukas" not in text
     assert str(tool_root) not in text
     assert "LOCALAPPDATA/MailProcessor/tools/universal_invoice_mail" in text
+
+
+def test_safe_localappdata_root_falls_back_to_home_when_env_is_empty(monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", "")
+
+    assert _safe_localappdata_root() == Path.home()
+
+
+def test_safe_localappdata_root_falls_back_to_home_when_env_is_relative(monkeypatch):
+    monkeypatch.setenv("LOCALAPPDATA", "relative-localappdata")
+
+    assert _safe_localappdata_root() == Path.home()

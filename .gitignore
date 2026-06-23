@@ -7,6 +7,18 @@
 # Local config (contains tool paths)
 %LOCALAPPDATA%/
 
+# Local secrets, OAuth tokens, databases and logs
+.env
+.env.*
+credentials.json
+client_secret*.json
+token.json
+*.db
+*.sqlite
+*.sqlite3
+*.log
+keyring/
+
 # Downloaded tools
 tools/
 
@@ -23,6 +35,7 @@ SHA256SUMS.txt
 
 # Internal task tracking (BACH internal, never publish)
 AUFGABEN.txt
+LOCK*.txt
 # ---- Interne Steuerungsdateien ----
 DECISIONS.md
 PORTIERUNGSPLAN.md

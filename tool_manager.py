@@ -16,7 +16,7 @@ from config import AppConfig, ToolConfig
 
 
 # Local dir for tools downloaded from GitHub
-_DOWNLOAD_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "MailProcessor" / "tools"
+_DOWNLOAD_DIR = cfg_module.app_data_dir() / "tools"
 
 # Static metadata for the three supported tools
 TOOL_DEFINITIONS: dict[str, dict] = {

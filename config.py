@@ -7,7 +7,16 @@ from pathlib import Path
 from typing import Optional
 
 
-CONFIG_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "MailProcessor"
+def app_data_dir() -> Path:
+    """Return a stable per-user config directory, even with broken LOCALAPPDATA."""
+    raw_local_appdata = os.environ.get("LOCALAPPDATA")
+    base_dir = Path(raw_local_appdata) if raw_local_appdata else Path.home()
+    if not base_dir.is_absolute():
+        base_dir = Path.home()
+    return base_dir / "MailProcessor"
+
+
+CONFIG_DIR = app_data_dir()
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 
