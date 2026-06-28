@@ -62,7 +62,7 @@ def test_launch_uses_python_interpreter_when_frozen(tmp_path, tm, monkeypatch):
 
     captured = {}
 
-    def fake_popen(args, cwd=None):
+    def fake_popen(args, cwd=None, env=None):
         captured["args"] = args
         captured["cwd"] = cwd
 
@@ -173,3 +173,50 @@ def test_download_dir_falls_back_to_home_when_localappdata_is_relative(monkeypat
     reloaded = importlib.reload(tool_manager)
 
     assert reloaded._DOWNLOAD_DIR == Path.home() / "MailProcessor" / "tools"
+
+
+def test_scan_handles_permission_error_in_download_dir(tm, tmp_path, monkeypatch):
+    """scan() gibt None zurück wenn iterdir() im Download-Ordner PermissionError wirft."""
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    download_root.mkdir()
+
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+    monkeypatch.setattr(tool_manager, "_SCAN_ROOTS", [download_root])
+
+    original_iterdir = Path.iterdir
+
+    def patched_iterdir(self):
+        if self.resolve(strict=False) == download_root.resolve(strict=False):
+            raise PermissionError("Zugriff verweigert (simuliert)")
+        return original_iterdir(self)
+
+    monkeypatch.setattr(Path, "iterdir", patched_iterdir)
+
+    # Vor dem Fix: PermissionError propagiert → scan() stürzt ab.
+    # Nach dem Fix: scan() fängt den Fehler ab und liefert None für alle Tools.
+    results = tm.scan()
+    assert all(v is None for v in results.values())
+
+
+def test_launch_sets_pythonioencoding_in_subprocess_env(tmp_path, tm, monkeypatch):
+    """launch() übergibt PYTHONIOENCODING=utf-8 an die Subprozess-Umgebung."""
+    folder = tmp_path / "MyTool"
+    folder.mkdir()
+    script = folder / "main.py"
+    script.write_text("", encoding="utf-8")
+
+    tm.register("universal_mail_cleaner", str(folder), "main.py")
+
+    captured = {}
+
+    def fake_popen(args, cwd=None, env=None):
+        captured["env"] = env
+
+    monkeypatch.setattr("tool_manager.subprocess.Popen", fake_popen)
+
+    result = tm.launch("universal_mail_cleaner")
+    assert result is None
+    assert captured.get("env") is not None, "env wurde nicht an Popen übergeben"
+    assert captured["env"].get("PYTHONIOENCODING") == "utf-8"

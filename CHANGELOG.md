@@ -7,6 +7,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- `tool_manager._iter_scan_candidates()`: `iterdir()` auf dem Download-Ordner und auf
+  `extracted/`-Unterordnern wird jetzt in `try/except (PermissionError, OSError)` gefangen.
+  Bislang konnte ein gesperrter OneDrive-Pfad den gesamten Tool-Scan zum Absturz bringen.
+- `tool_manager.ToolManager.launch()`: Sub-Skripte erhalten jetzt explizit
+  `PYTHONIOENCODING=utf-8` in ihrer Prozess-Umgebung. Verhindert cp1252-Encoding-Fehler
+  bei nicht-ASCII-Ausgaben auf Windows-Systemen ohne englische Systemsprache.
+- `tool_manager.download_tool()`: redundantes lokales `import shutil` entfernt
+  (bereits auf Modulebene importiert).
+- 2 neue Regressionstests in `tests/test_tool_manager.py`:
+  `test_scan_handles_permission_error_in_download_dir` und
+  `test_launch_sets_pythonioencoding_in_subprocess_env`;
+  Testsuite gesamt: 50 Pytest-Tests (alle grün).
+
 ### Security
 
 - Raised the MailProcessor companion Vite dev-server dependency from `^6.0.3` to `^6.4.3` to pick up the Windows dev-server path and editor middleware security fixes.
@@ -21,10 +36,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - PWA installability for `web_companion/`: `manifest.webmanifest` with `id`, `scope`, brand `theme_color` `#1E78C8`, 192 and 512 icon entries; pre-build `sw.js` shell with offline fallback; `offline.html` German offline page; 15 Node.js PWA tests in `tests/pwa.test.mjs`; test script `npm test` added to `package.json`.
 - Read-only Desktop-Snapshot export `mailprocessor-suite-v1.json` with redacted path hints for the companion workflow.
 - Tray action to export the current MailProcessor workspace snapshot directly as JSON.
+- Companion-Importansicht für echte `mailprocessor-suite-v1.json`-Snapshots mit lokaler read-only Referenzansicht, Statuskarten, Tool-Aktionshinweisen und Validierung gegen absolute Privatpfade.
 - GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
 - `llms.txt` with machine-readable project context for the doc-bricks mail suite.
 
 ### Changed
+- `web_companion` ist nicht mehr nur Scaffold: Snapshot-Import per Datei oder Paste, lokale `localStorage`-Referenz und kompakte Statusoberfläche für die drei Universal-Mail-Tools.
+- Node-Testlauf für `web_companion` deckt jetzt auch den Snapshot-Importvertrag ab.
 - Fallback für `LOCALAPPDATA` gehärtet: Leere oder relative Werte schreiben Konfiguration und GitHub-Tool-Downloads nicht mehr relativ zum Arbeitsordner, sondern sauber unter `Path.home()/MailProcessor`; neue Regressionstests decken beide Fehlkonfigurationen ab.
 - MailProcessor nutzt jetzt ein verifiziertes eigenes Tray-/Build-Icon statt still auf das generische Fallback zu rutschen; neue Regressionstests sichern Dateiladung, ICO-Größen und Gleichstand von `resources/icon.ico` und `MailProcessor.ico`.
 - Load tray icon from `resources/icon.ico` with a fallback to the existing generated envelope icon.

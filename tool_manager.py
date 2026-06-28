@@ -82,7 +82,14 @@ def _iter_scan_candidates(root: Path, folder_hints: list[str]):
     if not _same_path(root, _DOWNLOAD_DIR):
         return
 
-    for tool_dir in root.iterdir():
+    # iterdir() kann auf gesperrten Pfaden (z. B. OneDrive-Sync, fehlende Rechte)
+    # PermissionError / OSError werfen — eng fangen, damit scan() nicht abbricht.
+    try:
+        tool_dir_list = list(root.iterdir())
+    except (PermissionError, OSError):
+        return
+
+    for tool_dir in tool_dir_list:
         if not tool_dir.is_dir():
             continue
 
@@ -93,7 +100,11 @@ def _iter_scan_candidates(root: Path, folder_hints: list[str]):
         extracted_dir = register(tool_dir / "extracted")
         if extracted_dir is not None:
             yield extracted_dir
-            for child in extracted_dir.iterdir():
+            try:
+                children = list(extracted_dir.iterdir())
+            except (PermissionError, OSError):
+                continue
+            for child in children:
                 nested = register(child)
                 if nested is not None:
                     yield nested
@@ -200,9 +211,14 @@ class ToolManager:
         if not interpreter:
             return "Python interpreter not found"
         try:
+            # Auf Windows muss PYTHONIOENCODING gesetzt sein, damit Sub-Skripte
+            # nicht-ASCII-Ausgaben ohne cp1252-Fehler schreiben können.
+            env = dict(os.environ)
+            env.setdefault("PYTHONIOENCODING", "utf-8")
             subprocess.Popen(
                 [interpreter, str(script)],
                 cwd=str(script.parent),
+                env=env,
             )
             return None
         except Exception as e:
@@ -314,7 +330,6 @@ class ToolManager:
         # Extract archive
         extract_root = dest_dir / "extracted"
         if extract_root.exists():
-            import shutil
             shutil.rmtree(extract_root, ignore_errors=True)
         extract_root.mkdir(parents=True, exist_ok=True)
         try:
