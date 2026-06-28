@@ -10,9 +10,9 @@
 | Schritt | Status | Dateien |
 |---------|--------|---------|
 | 1. Projektstruktur | GERÜST | Vite+React+TS+Tailwind+Capacitor, kein `npm install` ausgeführt |
-| 2. Austauschformat | IN ARBEIT | `mailprocessor-suite-v1.json` aus Desktop importieren |
-| 3. Lokaler Speicher | OFFEN | IndexedDB (idb/dexie) statt SQLite |
-| 4. UI-Screens | OFFEN | Mobile Workflows priorisieren |
+| 2. Austauschformat | DONE | Import-View + Validierung für `mailprocessor-suite-v1.json`, lokale Read-only-Referenz via `localStorage` |
+| 3. Lokaler Speicher | DONE | Read-only Referenz via `localStorage`; `diffSnapshots()` in snapshot.js ermöglicht Vergleich beim erneuten Import (Statusänderungen, hinzugekommene/entfernte Tools); IndexedDB bleibt Nicht-Ziel (PWA braucht nur einen lokalen Referenz-Snapshot) |
+| 4. UI-Screens | IN ARBEIT | Import-/Statussicht + Diff-Anzeige umgesetzt (2026-06-28); weitere Mobile-Flows offen |
 | 5. PWA-Manifest + Icons | DONE | manifest.webmanifest + sw.js + offline.html in public/; 15/15 Tests grün |
 | 6. Capacitor-Wrapper | OFFEN | `npx cap add android` (Xcode für iOS noch nicht da) |
 | 7. Build verifizieren | OFFEN | `npm run build && npx cap sync` |
@@ -22,10 +22,9 @@
 1. `web_companion` nach `~/dev/mailprocessor-companion/` spiegeln (OneDrive ist langsam für node_modules).
 2. `npm install` ausführen.
 3. `npm run dev` starten, Browser auf `http://localhost:5173`.
-4. Import-View für `mailprocessor-suite-v1.json` bauen.
-5. IndexedDB-Modell am read-only Snapshot ausrichten.
-6. P1-Screens als Mobile-Prototyp bauen.
-7. `npx cap add android`, dann `cap sync` + Android Studio für ersten APK-Build.
+4. IndexedDB-Modell am read-only Snapshot ausrichten, sobald mehr als eine lokale Referenz nötig ist.
+5. P1-Screens als Mobile-Prototyp um die bestehende Import-/Statussicht herum bauen.
+6. `npx cap add android`, dann `cap sync` + Android Studio für ersten APK-Build.
 
 ## Voraussetzung Mac Studio
 
