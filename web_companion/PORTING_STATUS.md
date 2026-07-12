@@ -12,7 +12,7 @@
 | 1. Projektstruktur | GERÜST | Vite+React+TS+Tailwind+Capacitor, kein `npm install` ausgeführt |
 | 2. Austauschformat | DONE | Import-View + Validierung für `mailprocessor-suite-v1.json`, lokale Read-only-Referenz via `localStorage` |
 | 3. Lokaler Speicher | DONE | Read-only Referenz via `localStorage`; `diffSnapshots()` in snapshot.js ermöglicht Vergleich beim erneuten Import (Statusänderungen, hinzugekommene/entfernte Tools); IndexedDB bleibt Nicht-Ziel (PWA braucht nur einen lokalen Referenz-Snapshot) |
-| 4. UI-Screens | IN ARBEIT | Import-/Statussicht + Diff-Anzeige umgesetzt (2026-06-28); weitere Mobile-Flows offen |
+| 4. UI-Screens | IN ARBEIT | Import-/Statussicht + Diff-Anzeige umgesetzt (2026-06-28); Android-/iOS-PWA-Smoke-Contract mit echter Snapshot-Fixture ergänzt (2026-07-13); echter Geräte-Signoff offen |
 | 5. PWA-Manifest + Icons | DONE | manifest.webmanifest + sw.js + offline.html in public/; 15/15 Tests grün |
 | 6. Capacitor-Wrapper | OFFEN | `npx cap add android` (Xcode für iOS noch nicht da) |
 | 7. Build verifizieren | OFFEN | `npm run build && npx cap sync` |
@@ -25,6 +25,20 @@
 4. IndexedDB-Modell am read-only Snapshot ausrichten, sobald mehr als eine lokale Referenz nötig ist.
 5. P1-Screens als Mobile-Prototyp um die bestehende Import-/Statussicht herum bauen.
 6. `npx cap add android`, dann `cap sync` + Android Studio für ersten APK-Build.
+
+## Mobile-Smoke-Contract
+
+Lokaler Contract:
+
+```bash
+node --test tests/mobile_pwa_smoke.test.mjs
+```
+
+Die Fixture `tests/mobile_smoke_snapshot.json` bildet einen echten
+`mailprocessor-suite-v1`-Desktop-Export mit redigierten Pfadhinweisen ab. Der
+Smoke deckt Android-Chrome- und iOS-Safari-PWA-Metadaten, Offline-Assets,
+lokale Browser-Speicherung und Snapshot-Diff ab. Ein echter Geräte- oder
+Emulator-Signoff bleibt offen und ist in `MOBILE_PWA_SMOKE.md` beschrieben.
 
 ## Voraussetzung Mac Studio
 

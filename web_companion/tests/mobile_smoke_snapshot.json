@@ -1,0 +1,43 @@
+{
+  "schema": "mailprocessor-suite-v1",
+  "exported_at": "2026-07-13T00:10:00+02:00",
+  "app": {
+    "name": "MailProcessor",
+    "version": "0.1.0",
+    "platform": "windows"
+  },
+  "tools": [
+    {
+      "id": "universal_mail_cleaner",
+      "display_name": "Universal Mail Cleaner",
+      "enabled": true,
+      "installed_by": "github",
+      "version": "v1.2.0",
+      "status": "available",
+      "path_hint": "LOCALAPPDATA/MailProcessor/tools/universal_mail_cleaner"
+    },
+    {
+      "id": "universal_docs_grabber",
+      "display_name": "Universal Docs Grabber",
+      "enabled": true,
+      "installed_by": "manual",
+      "version": "v1.1.0",
+      "status": "missing",
+      "path_hint": ".../UniversalDocsGrabber"
+    },
+    {
+      "id": "universal_invoice_mail",
+      "display_name": "Universal Invoice Mail",
+      "enabled": false,
+      "installed_by": null,
+      "version": null,
+      "status": "not_configured",
+      "path_hint": null
+    }
+  ],
+  "notes": [
+    "Snapshot enthält keine Maildaten und keine Zugangsdaten.",
+    "Pfade sind redigiert und nur als Hinweis für den Desktop-Abgleich gedacht.",
+    "Diese Datei ist eine reale Mobile-Smoke-Fixture für Android Chrome und iOS Safari."
+  ]
+}
