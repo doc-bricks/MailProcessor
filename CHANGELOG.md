@@ -9,6 +9,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Streunende Bugsweep-Backup-Ordner (`MailProcessor_BUGSWEEP_*_20260621.bak/`),
+  verwaiste Scaffold-Icons ohne Codebezug (`assets/android-icon-*`,
+  `assets/splash-icon.png`, doppelte `web_companion/apple-touch-icon*.png` und
+  `web_companion/favicon.png` außerhalb von `public/`) sowie vier
+  `*_BUGSWEEP_*.bak`-Dateien in `web_companion/` nach `_archive/` verschoben
+  (neu gitignored). Keine dieser Dateien wurde von Code, Tests oder Doku
+  referenziert.
+- README/README-DE: veraltete Testzahl (53) auf die tatsächliche lokale
+  Pytest-Anzahl (58) korrigiert.
 - `update_files.py`: Der historische harte Benutzerpfad ist durch den aufgelösten
   Skript-Projektordner ersetzt. Der Standardlauf ist ein Dry-Run für genau vier
   dokumentierte Dateien; ein optionaler Zielpfad muss absolut sein und exakt
