@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at top left, rgba(30, 120, 200, 0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(249, 115, 22, 0.14), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4f8 52%, #f7f4ee 100%);
+  font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
 /* iOS safe-area — Notch / Dynamic Island / Home-Indicator */
 .shell {
   padding-top: env(safe-area-inset-top);

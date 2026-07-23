@@ -23,12 +23,20 @@ npm run cap:android      # öffnet Android Studio
 
 - **PWA** via `vite-plugin-pwa` (Service Worker, Manifest)
 - **Datenformat:** Import `mailprocessor-suite-v1.json` aus Desktop-Quelle
+- **Statussicht:** lokale read-only Referenzansicht mit Tool-Status, Versionen, Pfad-Hinweisen und Desktop-Aktionshinweisen
 - **Lokaler Speicher:** IndexedDB (per `idb` oder `dexie`) statt SQLite
 - **Capacitor:** schlanke native Wrapper für Android + iOS
 
 ## App-ID / Bundle
 
 `com.lukas.mailprocessor` — wird sowohl für Capacitor als auch für Play/App Store gebraucht.
+
+## Aktueller Companion-Stand
+
+- JSON-Datei oder eingefügten Snapshot `mailprocessor-suite-v1.json` importieren
+- Snapshot nur lokal im Browser/PWA halten
+- Keine Maildaten, Tokens oder absoluten Privatpfade akzeptieren
+- Read-only Referenz für spätere Desktop-Wartung
 
 ## Status
 
