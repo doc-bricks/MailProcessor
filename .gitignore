@@ -44,3 +44,6 @@ DONE.md
 
 # Build-Artefakte und Quell-Icons fuer PWA (Kopien in web_companion/public/ werden getrackt)
 web_companion/icons/
+
+# Wegwerf-/Fremdartefakte (Bugsweep-Backups, verwaiste Scaffold-Dateien) -- siehe CHANGELOG
+_archive/

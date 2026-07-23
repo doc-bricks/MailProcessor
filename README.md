@@ -67,7 +67,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Current local test suite: 41 Pytest tests.
+Current local test suite: 53 Pytest tests.
 
 ## Configuration
 

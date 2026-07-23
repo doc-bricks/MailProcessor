@@ -9,6 +9,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- `update_files.py`: Der historische harte Benutzerpfad ist durch den aufgelösten
+  Skript-Projektordner ersetzt. Der Standardlauf ist ein Dry-Run für genau vier
+  dokumentierte Dateien; ein optionaler Zielpfad muss absolut sein und exakt
+  zum Projektordner auflösen, bevor `--apply` schreiben darf.
+- `installer.PathsPage`: Manuelle Pfadfelder und `Durchsuchen …`-Buttons im
+  Einrichtungs-Wizard exponieren jetzt pro Tool sprechende Accessible Names,
+  Descriptions und Tooltips statt sich fast nur auf Gruppenüberschrift und
+  Position zu verlassen.
 - `tool_manager._iter_scan_candidates()`: `iterdir()` auf dem Download-Ordner und auf
   `extracted/`-Unterordnern wird jetzt in `try/except (PermissionError, OSError)` gefangen.
   Bislang konnte ein gesperrter OneDrive-Pfad den gesamten Tool-Scan zum Absturz bringen.
@@ -21,6 +29,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   `test_scan_handles_permission_error_in_download_dir` und
   `test_launch_sets_pythonioencoding_in_subprocess_env`;
   Testsuite gesamt: 50 Pytest-Tests (alle grün).
+- Neuer Installer-Regressionscheck deckt den zugänglichen Kontext der manuellen
+  Pfadsteuerung im Wizard ab.
 
 ### Security
 
@@ -28,8 +38,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Documentation
 
+- Added `MACOS_LINUX_SOURCE_SMOKE.md` plus an executable source-platform smoke
+  for config fallback, suite scanning and manual tool-path registration.
 - Standardized `llms.txt`: `## Last-checked:` header at line 1, `## Search Phrases` as fenced code block.
-- Updated README test count: 32 → 41 Pytest tests.
+- Updated README test count to 53 Pytest tests.
 - Added `web_companion/icons/` to `.gitignore` (PWA source icon copies; tracked copies live in `web_companion/public/`).
 
 ### Added
