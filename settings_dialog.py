@@ -155,24 +155,27 @@ class SettingsDialog(QDialog):
         self._table.setHorizontalHeaderLabels([tr("col_tool"), tr("col_status"), tr("col_path")])
         self._table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._table.verticalHeader().setVisible(False)
+        self._table.itemSelectionChanged.connect(self._update_tool_action_state)
         layout.addWidget(self._table)
 
         btn_row = QHBoxLayout()
         rescan_btn = QPushButton(tr("btn_rescan"))
         rescan_btn.clicked.connect(self._on_rescan)
-        change_btn = QPushButton(tr("btn_change_path"))
-        change_btn.clicked.connect(self._on_change_path)
-        remove_btn = QPushButton(tr("btn_remove_tool"))
-        remove_btn.clicked.connect(self._on_remove_tool)
+        self._change_btn = QPushButton(tr("btn_change_path"))
+        self._change_btn.clicked.connect(self._on_change_path)
+        self._remove_btn = QPushButton(tr("btn_remove_tool"))
+        self._remove_btn.clicked.connect(self._on_remove_tool)
         btn_row.addWidget(rescan_btn)
         btn_row.addStretch()
-        btn_row.addWidget(change_btn)
-        btn_row.addWidget(remove_btn)
+        btn_row.addWidget(self._change_btn)
+        btn_row.addWidget(self._remove_btn)
         layout.addLayout(btn_row)
 
         self._refresh_table()
+        self._update_tool_action_state()
         return w
 
     def _refresh_table(self):
@@ -203,6 +206,7 @@ class SettingsDialog(QDialog):
 
         self._table.resizeColumnToContents(0)
         self._table.resizeColumnToContents(1)
+        self._update_tool_action_state()
 
     def _selected_tool_id(self) -> str | None:
         row = self._table.currentRow()
@@ -210,6 +214,32 @@ class SettingsDialog(QDialog):
             return None
         item = self._table.item(row, 0)
         return item.data(Qt.ItemDataRole.UserRole) if item else None
+
+    def _update_tool_action_state(self):
+        tid = self._selected_tool_id()
+        if tid:
+            tool_name = self._tm.tool_display_name(tid)
+            tool_desc = self._tm.tool_description(tid)
+            change_name = f"{tr('btn_change_path')}: {tool_name}"
+            remove_name = f"{tr('btn_remove_tool')}: {tool_name}"
+            self._change_btn.setEnabled(True)
+            self._change_btn.setToolTip(change_name)
+            self._change_btn.setAccessibleName(change_name)
+            self._change_btn.setAccessibleDescription(tool_desc)
+            self._remove_btn.setEnabled(True)
+            self._remove_btn.setToolTip(remove_name)
+            self._remove_btn.setAccessibleName(remove_name)
+            self._remove_btn.setAccessibleDescription(tool_desc)
+            return
+
+        self._change_btn.setEnabled(False)
+        self._change_btn.setToolTip("")
+        self._change_btn.setAccessibleName(tr("btn_change_path"))
+        self._change_btn.setAccessibleDescription("")
+        self._remove_btn.setEnabled(False)
+        self._remove_btn.setToolTip("")
+        self._remove_btn.setAccessibleName(tr("btn_remove_tool"))
+        self._remove_btn.setAccessibleDescription("")
 
     def _on_rescan(self):
         results = self._tm.scan()

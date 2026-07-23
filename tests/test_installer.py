@@ -4,7 +4,7 @@ import copy
 import os
 
 import pytest
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWidgets import QApplication, QDialog, QPushButton
 
 from config import AppConfig, ToolConfig
 from i18n import set_language
@@ -208,3 +208,28 @@ def test_paths_page_requires_manual_paths_before_completion(qapp, tm, tmp_path):
     assert page.isComplete() is True
     assert changes
     assert changes[-1] is True
+
+
+def test_paths_page_exposes_accessible_context_for_manual_path_controls(qapp, tm):
+    set_language("de")
+    tools_page = ToolsPage(tm)
+    tools_page.initializePage()
+    tools_page._checkboxes["universal_docs_grabber"].setChecked(True)
+    tools_page._checkboxes["universal_invoice_mail"].setChecked(False)
+
+    page = PathsPage(tools_page, tm)
+    page.initializePage()
+
+    tool_name = tm.tool_display_name("universal_docs_grabber")
+    edit = page._path_edits["universal_docs_grabber"]
+    browse_btn = next(
+        btn for btn in page.findChildren(QPushButton)
+        if btn.text() == "Durchsuchen …"
+    )
+
+    assert edit.accessibleName() == f"{tool_name} - Skriptpfad"
+    assert tool_name in edit.accessibleDescription()
+    assert "nicht einzurichten" in edit.accessibleDescription()
+    assert browse_btn.accessibleName() == f"{tool_name} - Durchsuchen"
+    assert tool_name in browse_btn.accessibleDescription()
+    assert browse_btn.toolTip() == f"Python-Skript für {tool_name} auswählen"

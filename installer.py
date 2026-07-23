@@ -280,8 +280,14 @@ class PathsPage(QWizardPage):
             row_lbl = QLabel(f"<b>{name}</b>")
             edit = QLineEdit()
             edit.setPlaceholderText(tr("page_paths_hint"))
+            edit.setAccessibleName(tr("page_paths_field_name", name))
+            edit.setAccessibleDescription(tr("page_paths_field_desc", name))
+            edit.setToolTip(tr("page_paths_field_desc", name))
             browse_btn = QPushButton(tr("browse"))
             browse_btn.setFixedWidth(120)
+            browse_btn.setAccessibleName(tr("page_paths_browse_name", name))
+            browse_btn.setAccessibleDescription(tr("page_paths_browse_desc", name))
+            browse_btn.setToolTip(tr("page_paths_browse_tip", name))
 
             def _make_browse(e=edit, t=tid):
                 def _browse():

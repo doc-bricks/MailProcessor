@@ -111,3 +111,31 @@ def test_rescan_shows_rescan_none_when_tool_already_registered(qapp, tmp_path, m
         "When tool is already registered, scan adds nothing — 'rescan_none' must be shown, "
         f"got: {shown_texts[0]!r}"
     )
+
+
+def test_tool_action_buttons_require_selection_and_expose_tool_context(qapp, tmp_path):
+    """Change/remove buttons stay disabled without selection and expose the selected tool."""
+    set_language("de")
+    from settings_dialog import SettingsDialog
+
+    cfg = AppConfig()
+    tool_cfg = ToolConfig(enabled=True, path=str(tmp_path), main_script="main.py")
+    cfg.tools["universal_mail_cleaner"] = tool_cfg
+
+    dlg = SettingsDialog(cfg)
+
+    assert not dlg._change_btn.isEnabled()
+    assert not dlg._remove_btn.isEnabled()
+    assert dlg._change_btn.accessibleName() == "Pfad ändern"
+    assert dlg._remove_btn.accessibleName() == "Entfernen"
+
+    dlg._table.selectRow(0)
+    qapp.processEvents()
+
+    assert dlg._change_btn.isEnabled()
+    assert dlg._remove_btn.isEnabled()
+    assert dlg._change_btn.accessibleName() == "Pfad ändern: Universal Mail Cleaner"
+    assert dlg._remove_btn.accessibleName() == "Entfernen: Universal Mail Cleaner"
+    assert dlg._change_btn.toolTip() == "Pfad ändern: Universal Mail Cleaner"
+    assert dlg._remove_btn.toolTip() == "Entfernen: Universal Mail Cleaner"
+    assert "IMAP-Postfach nach Regeln bereinigen" in dlg._change_btn.accessibleDescription()
