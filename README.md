@@ -9,6 +9,12 @@ System tray launcher for the three Universal Mail Tools.
 > **Deutsche Dokumentation:** [README-DE.md](README-DE.md)
 
 [![MailProcessor tests](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml/badge.svg)](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
+
+> [!NOTE]
+> For AI agents and automated tools, key architecture and interface metadata are indexed in [llms.txt](llms.txt).
 
 ![MailProcessor Installer](README/screenshots/main.png)
 

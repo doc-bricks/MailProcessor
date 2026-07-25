@@ -7,6 +7,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Maintenance
+
+- **Technical Hygiene & Documentation Maintenance (2026-07-25)**:
+  - Added PEP 621 `pyproject.toml` with package metadata and Pytest configuration (`pythonpath = "."`).
+  - Updated `llms.txt` header date to `2026-07-25` and aligned privacy/local-first architecture descriptions.
+  - Enhanced `README.md` and `README-DE.md` with Shields.io status badges and AI/LLM integration callout (`> [!NOTE]`).
+  - Verified local verification suite (58/58 Pytest tests passed).
+
 ### Fixed
 
 - Streunende Bugsweep-Backup-Ordner (`MailProcessor_BUGSWEEP_*_20260621.bak/`),

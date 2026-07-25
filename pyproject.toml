@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc-bricks-mailprocessor"
+version = "0.1.0"
+description = "Local-first Windows tray launcher hub for doc-bricks Universal Mail Tools"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "doc-bricks"}
+]
+keywords = ["pyside6", "system-tray", "mail-tools", "email-manager", "windows-tray", "imap"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "PySide6>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/doc-bricks/MailProcessor"
+Repository = "https://github.com/doc-bricks/MailProcessor"
+"Bug Tracker" = "https://github.com/doc-bricks/MailProcessor/issues"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["."]

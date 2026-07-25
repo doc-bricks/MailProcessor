@@ -1,4 +1,4 @@
-## Last-checked: 2026-06-11
+## Last-checked: 2026-07-25
 
 # MailProcessor
 
@@ -20,13 +20,13 @@ Core behavior:
 - Scans sibling folders and `%LOCALAPPDATA%\MailProcessor\tools\` for supported tools.
 - Downloads latest tool releases from GitHub when users opt in through the setup wizard.
 - Stores launcher configuration under `%LOCALAPPDATA%\MailProcessor\config.json`.
-- Exports a read-only `mailprocessor-suite-v1.json` snapshot for the companion workflow.
+- Exports a read-only `mailprocessor-suite-v1.json` snapshot for offline reference.
 
 Privacy boundary:
 
 - MailProcessor does not store mail contents, passwords, tokens, or IMAP credentials.
 - Snapshot exports redact local paths and contain only launcher metadata.
-- The web companion is a status/reference companion, not a remote-control surface for desktop tools.
+- MailProcessor operates 100% local-first on the user's desktop with no remote cloud dependencies.
 
 Local verification:
 
