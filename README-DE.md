@@ -37,6 +37,19 @@ MailProcessor sitzt im Windows-System-Tray und gibt per Rechtsklick Zugang zu:
 - Autostart mit Windows (Registry-Eintrag)
 - Zweisprachig: Deutsch / Englisch
 
+## Systemarchitektur & Workflow
+
+```mermaid
+graph TD
+    Tray["Windows System-Tray (MailProcessor)"] --> Wizard["Einrichtungsassistent & Tool-Scanner"]
+    Tray --> Config["%LOCALAPPDATA%/MailProcessor/config.json"]
+    Tray --> Snapshot["Snapshot-Export (mailprocessor-suite-v1.json)"]
+    Tray --> Tool1["Universal Mail Cleaner"]
+    Tray --> Tool2["Universal Docs Grabber"]
+    Tray --> Tool3["Universal Invoice Mail"]
+    Wizard --> GitHub["GitHub Releases Auto-Downloader"]
+```
+
 ## Installation
 
 1. Python 3.10+ installieren

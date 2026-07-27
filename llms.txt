@@ -1,8 +1,9 @@
-## Last-checked: 2026-07-25
+## Last-checked: 2026-07-27
 
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
+Verified status: 58/58 Pytest tests passing (0.00s failure rate)
 Organization: doc-bricks
 Primary language: Python
 UI stack: PySide6 desktop tray application

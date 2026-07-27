@@ -1,0 +1,22 @@
+# MARKETING-LOG.txt — MailProcessor Discoverability & Visibility Recommendations
+
+Date: 2026-07-27
+Repository: doc-bricks/MailProcessor
+Path: Path B (Discoverability, Projektauftritt, Nutzerführung & Sichtbarkeit)
+
+---
+
+## Non-Automated Marketing Recommendations
+
+1. **Video Walkthrough / GIF Recording**:
+   - Record a 30-second GIF or short video showing how MailProcessor operates in the Windows system tray (right-click menu, launching Mail Cleaner / Docs Grabber / Invoice Mail with 1 click).
+   - Embed this GIF at the top of `README.md` and `README-DE.md`.
+
+2. **Windows Store & WinGet Packaging**:
+   - Package `MailProcessor-0.1.0-desktop.exe` for WinGet (`winget install doc-bricks.MailProcessor`) and Microsoft Store to reach Windows desktop users directly.
+
+3. **Product Hunt & Reddit Showcases**:
+   - Post a showcase on r/selfhosted, r/windows, and Product Hunt highlighting privacy-first local IMAP mail management without cloud subscription fees.
+
+4. **Integration with open-bricks & Ecosystem Navigation**:
+   - Cross-link MailProcessor on the `open-bricks` portal landing page as the central desktop hub for the `doc-bricks` mail tools suite.

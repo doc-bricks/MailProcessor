@@ -9,6 +9,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Discoverability, SEO & Visual Architecture Maintenance (2026-07-27)**:
+  - Added Mermaid System Architecture & Data Flow Diagram to `README.md` and `README-DE.md`.
+  - Updated `llms.txt` header date to `2026-07-27` with 58/58 Pytest verification status notes.
+  - Formulated non-automated marketing and visibility recommendations in `MARKETING-LOG.txt`.
 - **Technical Hygiene & Documentation Maintenance (2026-07-25)**:
   - Added PEP 621 `pyproject.toml` with package metadata and Pytest configuration (`pythonpath = "."`).
   - Updated `llms.txt` header date to `2026-07-25` and aligned privacy/local-first architecture descriptions.
