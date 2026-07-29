@@ -9,6 +9,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Discoverability, README & SEO Verification (2026-07-29)**:
+  - Updated `llms.txt` Last-checked timestamp to `2026-07-29`.
+  - Verified repository presentation, bilingual documentation (`README.md` / `README-DE.md`), screenshots (`README/screenshots/main.png`), and Pytest test suite (58/58 passed).
 - **Discoverability, SEO & Visual Architecture Maintenance (2026-07-27)**:
   - Added Mermaid System Architecture & Data Flow Diagram to `README.md` and `README-DE.md`.
   - Updated `llms.txt` header date to `2026-07-27` with 58/58 Pytest verification status notes.
