@@ -1,7 +1,7 @@
 # MailProcessor
 
 <p align="center">
-  <img src="assets/banner.svg" alt="MailProcessor Banner" width="100%" />
+  <img src="assets/banner.png" alt="MailProcessor Banner" width="100%" />
 </p>
 
 System tray launcher for the three Universal Mail Tools.
