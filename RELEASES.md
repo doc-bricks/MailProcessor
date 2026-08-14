@@ -19,3 +19,10 @@
 
 - The binary release is built from `main.py` via `build_exe.bat`.
 - The app ships as a tray launcher for Universal Mail Cleaner, Universal Docs Grabber, and Universal Invoice Mail.
+
+### Current platform scope (2026-08-14)
+
+- Windows desktop remains the only active product line.
+- The former web/PWA companion was intentionally removed after its use-case review.
+- The redacted `mailprocessor-suite-v1.json` export is local-only and does not
+  establish mobile, synchronization, Store, or native macOS/Linux release readiness.

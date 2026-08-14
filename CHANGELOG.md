@@ -9,6 +9,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Platform scope synchronization (2026-08-14)**:
+  - Aligned release, README, export-format, and LLM documentation with the intentional removal of the former web/PWA companion.
+  - Kept `mailprocessor-suite-v1.json` as a redacted local-reference export; it does not establish a mobile, synchronization, Store, or native macOS/Linux release path.
 - **Security & License Audit (2026-08-14)**:
   - **Security**: Added archive member path validation in `tool_manager.py` (`download_tool`) against Zip Slip path traversal (CWE-22) when downloading and extracting release archives.
   - **License & Dependency Inventory**: Synchronized `THIRD_PARTY_LICENSES.txt` and `test_third_party_licenses.py` with the current desktop runtime dependencies (`PySide6`, `PySide6_Addons`, `PySide6_Essentials`, `shiboken6`), removing legacy npm references from the previously deleted web companion. Aligned `pyproject.toml` dependencies (`PySide6>=6.6.0`) with `requirements.txt`.

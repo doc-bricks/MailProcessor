@@ -33,7 +33,7 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 - GitHub installer: download tools directly from GitHub Releases
 - Version numbers shown in tray menu (read from each tool's CHANGELOG.md)
 - Settings: change paths, remove tools, add manually
-- Read-only snapshot export as `mailprocessor-suite-v1.json` for the companion view
+- Read-only snapshot export as `mailprocessor-suite-v1.json` for local reference; no web or mobile companion is active
 - Windows autostart (registry entry)
 - Bilingual: German / English
 
@@ -72,6 +72,13 @@ graph TD
 - Local release artifacts are staged in `releases/v0.1.0/`
 - Rebuild the Windows executable with `build_exe.bat`
 - The packaged binary is named `MailProcessor-0.1.0-desktop.exe`
+
+## Platform scope
+
+MailProcessor is a Windows desktop tray launcher. The former web/PWA companion
+was intentionally removed after its use-case review; the redacted snapshot is
+not a synchronization interface or a mobile product. macOS and Linux retain a
+source-level contract only, not a packaged end-user release.
 
 ## Requirements
 

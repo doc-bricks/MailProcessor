@@ -1,9 +1,9 @@
-## Last-checked: 2026-07-29
+## Last-checked: 2026-08-14
 
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
-Verified status: 58/58 Pytest tests passing (0.00s failure rate)
+Verified status: 60/60 Pytest tests passing (0.00s failure rate)
 Organization: doc-bricks
 Primary language: Python
 UI stack: PySide6 desktop tray application
@@ -22,6 +22,8 @@ Core behavior:
 - Downloads latest tool releases from GitHub when users opt in through the setup wizard.
 - Stores launcher configuration under `%LOCALAPPDATA%\MailProcessor\config.json`.
 - Exports a read-only `mailprocessor-suite-v1.json` snapshot for offline reference.
+- Has no active web/PWA or Android/iOS companion; the former companion was deliberately removed after its use-case review.
+- Maintains a source-level macOS/Linux contract only; no native package or end-user platform release is verified.
 
 Privacy boundary:
 

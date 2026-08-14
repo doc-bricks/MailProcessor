@@ -1,12 +1,15 @@
 # Exportformat - mailprocessor-suite-v1.json
 
-Stand: 2026-05-30
+Stand: 2026-08-14
 
-Dieses Format ist für einen späteren Web/PWA-Companion vorgesehen. Es ist ein read-only Snapshot der MailProcessor-Launcher-Konfiguration und kein Synchronisationsformat.
+Dieses Format ist ein read-only Snapshot der MailProcessor-Launcher-
+Konfiguration für lokale Referenz und Wartung. Der frühere Web/PWA-Companion
+wurde bewusst entfernt; das Format ist weder ein Synchronisationsformat noch
+eine aktive Mobile-Schnittstelle.
 
 ## Zweck
 
-Der Export beantwortet unterwegs oder auf einem Zweitgerät:
+Der Export beantwortet bei lokaler Referenz oder Wartung:
 
 - Welche Universal-Mail-Tools sind in MailProcessor registriert?
 - Welche Versionen wurden zuletzt erkannt?
