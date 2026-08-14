@@ -220,3 +220,94 @@ def test_launch_sets_pythonioencoding_in_subprocess_env(tmp_path, tm, monkeypatc
     assert result is None
     assert captured.get("env") is not None, "env wurde nicht an Popen übergeben"
     assert captured["env"].get("PYTHONIOENCODING") == "utf-8"
+
+
+def test_download_tool_prevents_zip_slip(tm, tmp_path, monkeypatch):
+    """download_tool() detects and rejects zip entries attempting path traversal."""
+    import io
+    import json
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    # Create in-memory zip with traversal member
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("../evil.txt", "malicious content")
+    zip_bytes = zip_buffer.getvalue()
+
+    fake_release = {
+        "tag_name": "v1.0.0",
+        "zipball_url": "https://example.com/fake.zip",
+    }
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+        def read(self, size=-1):
+            return self.data.read(size)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        if "api.github.com" in url:
+            return FakeResponse(json.dumps(fake_release).encode("utf-8"))
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is not None
+    assert "unsafe archive entry" in err
+
+
+def test_download_tool_extracts_safe_archive(tm, tmp_path, monkeypatch):
+    """download_tool() safely extracts a valid archive and registers the tool."""
+    import io
+    import json
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    # Create in-memory zip with valid structure
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("UniversalMailCleaner-1.0.0/mail_imap_cleaner_v1.py", "# cleaner script")
+    zip_bytes = zip_buffer.getvalue()
+
+    fake_release = {
+        "tag_name": "v1.0.0",
+        "zipball_url": "https://example.com/fake.zip",
+    }
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+        def read(self, size=-1):
+            return self.data.read(size)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        if "api.github.com" in url:
+            return FakeResponse(json.dumps(fake_release).encode("utf-8"))
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is None
+    assert tm.is_path_valid("universal_mail_cleaner")
+

@@ -13,15 +13,13 @@ def test_third_party_licenses_lists_runtime_dependencies():
         "PySide6_Addons",
         "PySide6_Essentials",
         "shiboken6",
-        "react",
-        "react-dom",
-        "@capacitor/core",
-        "@capacitor/android",
-        "@capacitor/ios",
     ]
 
     for package in expected_packages:
         assert package in text
 
-    assert "Checked: 2026-07-01" in text
-    assert "devDependencies" in text
+    # Ensure removed legacy web_companion packages are not present
+    for legacy_pkg in ["react-dom", "@capacitor/core", "@capacitor/android", "@capacitor/ios"]:
+        assert legacy_pkg not in text
+
+    assert "Checked: 2026-08-14" in text

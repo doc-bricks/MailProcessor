@@ -334,6 +334,11 @@ class ToolManager:
         extract_root.mkdir(parents=True, exist_ok=True)
         try:
             with zipfile.ZipFile(zip_path, "r") as zf:
+                resolved_extract_root = extract_root.resolve()
+                for member in zf.infolist():
+                    member_target = (extract_root / member.filename).resolve()
+                    if not (member_target == resolved_extract_root or resolved_extract_root in member_target.parents):
+                        return f"Extract error: unsafe archive entry {member.filename}"
                 zf.extractall(extract_root)
         except Exception as exc:
             return f"Extract error: {exc}"

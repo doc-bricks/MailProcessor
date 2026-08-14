@@ -9,6 +9,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Security & License Audit (2026-08-14)**:
+  - **Security**: Added archive member path validation in `tool_manager.py` (`download_tool`) against Zip Slip path traversal (CWE-22) when downloading and extracting release archives.
+  - **License & Dependency Inventory**: Synchronized `THIRD_PARTY_LICENSES.txt` and `test_third_party_licenses.py` with the current desktop runtime dependencies (`PySide6`, `PySide6_Addons`, `PySide6_Essentials`, `shiboken6`), removing legacy npm references from the previously deleted web companion. Aligned `pyproject.toml` dependencies (`PySide6>=6.6.0`) with `requirements.txt`.
+  - **Git & Repository Hygiene**: Cleaned obsolete `web_companion/icons/` ignore line in `.gitignore` and registered `"license": "MIT"` in `.SOFTWARE/releases.json`.
+  - **Test Suite**: Added unit tests `test_download_tool_prevents_zip_slip` and `test_download_tool_extracts_safe_archive` in `tests/test_tool_manager.py`. All 60 Pytest tests passing (100% green).
 - **Discoverability, README & SEO Verification (2026-07-29)**:
   - Updated `llms.txt` Last-checked timestamp to `2026-07-29`.
   - Verified repository presentation, bilingual documentation (`README.md` / `README-DE.md`), screenshots (`README/screenshots/main.png`), and Pytest test suite (58/58 passed).

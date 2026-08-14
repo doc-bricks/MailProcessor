@@ -1,13 +1,9 @@
 # Third-Party Licenses
 
 Project: MailProcessor
-Checked: 2026-07-01
+Checked: 2026-08-14
 
-Scope: Direct runtime dependencies declared in `requirements.txt` and
-`web_companion/package.json`, plus the Qt for Python wheel set installed
-transitively by `PySide6`. Web-companion devDependencies and build tooling are
-excluded because they are not shipped as part of the desktop runtime or the
-static PWA payload.
+Scope: Direct runtime dependencies declared in `requirements.txt` / `pyproject.toml`, plus the Qt for Python wheel set installed transitively by `PySide6`.
 
 | Package | Requirement / checked version | License | Source |
 |---|---:|---|---|
@@ -15,11 +11,6 @@ static PWA payload.
 | PySide6_Addons | transitive / checked `6.11.1` | `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` | https://pypi.org/project/PySide6-Addons/ |
 | PySide6_Essentials | transitive / checked `6.11.1` | `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` | https://pypi.org/project/PySide6-Essentials/ |
 | shiboken6 | transitive / checked `6.11.1` | `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` | https://pypi.org/project/shiboken6/ |
-| react | `^18.3.1` / checked `18.3.1` | `MIT` | https://www.npmjs.com/package/react |
-| react-dom | `^18.3.1` / checked `18.3.1` | `MIT` | https://www.npmjs.com/package/react-dom |
-| @capacitor/core | `^7.0.0` / checked `7.0.0` | `MIT` | https://www.npmjs.com/package/@capacitor/core |
-| @capacitor/android | `^7.0.0` / checked `7.0.0` | `MIT` | https://www.npmjs.com/package/@capacitor/android |
-| @capacitor/ios | `^7.0.0` / checked `7.0.0` | `MIT` | https://www.npmjs.com/package/@capacitor/ios |
 
 Notes:
 
@@ -28,8 +19,4 @@ Notes:
   `PySide6_Essentials`, `PySide6_Addons`, and `shiboken6`; redistribution must
   comply with the selected Qt for Python open-source license terms or a
   commercial Qt license.
-- The MailProcessor web companion is a local read-only companion. The listed
-  npm packages are its direct runtime dependencies; TypeScript, Vite, Tailwind,
-  and related tooling remain build-time-only and are intentionally excluded.
-- Regenerate this file whenever `requirements.txt` or
-  `web_companion/package.json` runtime dependencies change.
+- Regenerate this file whenever runtime dependencies change.
