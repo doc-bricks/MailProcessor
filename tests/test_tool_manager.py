@@ -255,8 +255,9 @@ def test_download_tool_prevents_zip_slip(tm, tmp_path, monkeypatch):
             pass
 
     def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
         url = req.full_url if hasattr(req, "full_url") else req
-        if "api.github.com" in url:
+        if urlparse(url).hostname == "api.github.com":
             return FakeResponse(json.dumps(fake_release).encode("utf-8"))
         return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
 
@@ -300,8 +301,9 @@ def test_download_tool_extracts_safe_archive(tm, tmp_path, monkeypatch):
             pass
 
     def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
         url = req.full_url if hasattr(req, "full_url") else req
-        if "api.github.com" in url:
+        if urlparse(url).hostname == "api.github.com":
             return FakeResponse(json.dumps(fake_release).encode("utf-8"))
         return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
 
