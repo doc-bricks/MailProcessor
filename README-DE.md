@@ -73,6 +73,26 @@ graph TD
 - Die Windows-EXE wird mit `build_exe.bat` neu erzeugt
 - Das Paket heißt `MailProcessor-0.1.0-desktop.exe`
 
+### Microsoft-Store-Readiness
+
+Der Microsoft Store ist derzeit **zurückgestellt**. MailProcessor startet
+externe Desktop-Prozesse, schreibt den nutzerbezogenen Autostart-Eintrag und
+lädt ausgewählte GitHub-Release-Archive herunter. Ein Paket benötigt daher
+`runFullTrust` und `internetClient` sowie ein separates Datenschutz-, Paket- und
+Zertifizierungsreview.
+
+Das schreibfreie Gate ist für Menschen und Automationen nutzbar und kann
+stabiles JSON ausgeben:
+
+```bash
+python store_readiness.py --release-dir <vorhandener-vX.Y.Z-Releaseordner>
+python store_readiness.py --release-dir <vorhandener-vX.Y.Z-Releaseordner> --json
+```
+
+Exit-Code `0` bedeutet, dass alle Gates bestanden wurden. Exit-Code `2`
+signalisiert mindestens einen Blocker. Das Audit baut, signiert, lädt oder
+übermittelt kein Paket.
+
 ## Plattformumfang
 
 MailProcessor ist ein Windows-Desktop-Tray-Launcher. Der frühere Web-/PWA-
@@ -94,7 +114,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Aktuelle lokale Testsuite: 60 Pytest-Tests.
+Aktuelle lokale Testsuite: 66 Pytest-Tests.
 
 ## Konfiguration
 

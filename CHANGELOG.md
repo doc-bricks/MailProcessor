@@ -9,6 +9,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Fail-closed Microsoft Store readiness gate (2026-08-16)**:
+  - Added `store_readiness.py` with human-readable and JSON output for release
+    hashes, Store metadata, AppxManifest capabilities, privacy/support files,
+    dependency licenses, MSIX presence, and WACK evidence.
+  - Derived the required `runFullTrust` and `internetClient` capabilities from
+    the external process/autostart and opt-in GitHub installer behavior.
+  - The current v0.1.0 audit is deferred: the source ZIP hash matches, while the
+    desktop EXE hash differs from `SHA256SUMS.txt`; Store metadata, manifest,
+    privacy/support material, MSIX, and WACK evidence are still absent.
+  - Added six regression tests for a complete fixture, tampered release,
+    checksum path traversal, missing FullTrust declaration, missing
+    privacy/support material, and self-exclusion during capability detection.
 - **Platform scope synchronization (2026-08-14)**:
   - Aligned release, README, export-format, and LLM documentation with the intentional removal of the former web/PWA companion.
   - Kept `mailprocessor-suite-v1.json` as a redacted local-reference export; it does not establish a mobile, synchronization, Store, or native macOS/Linux release path.

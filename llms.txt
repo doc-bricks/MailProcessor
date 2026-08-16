@@ -1,9 +1,9 @@
-## Last-checked: 2026-08-14
+## Last-checked: 2026-08-16
 
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
-Verified status: 60/60 Pytest tests passing (0.00s failure rate)
+Verified status: 66/66 Pytest tests passing (0.00s failure rate)
 Organization: doc-bricks
 Primary language: Python
 UI stack: PySide6 desktop tray application
@@ -24,6 +24,9 @@ Core behavior:
 - Exports a read-only `mailprocessor-suite-v1.json` snapshot for offline reference.
 - Has no active web/PWA or Android/iOS companion; the former companion was deliberately removed after its use-case review.
 - Maintains a source-level macOS/Linux contract only; no native package or end-user platform release is verified.
+- Provides a read-only `store_readiness.py` CLI with text and JSON output; the
+  Microsoft Store channel stays deferred until every integrity, FullTrust,
+  privacy/support, MSIX, and WACK gate passes.
 
 Privacy boundary:
 
