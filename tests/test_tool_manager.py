@@ -313,3 +313,17 @@ def test_download_tool_extracts_safe_archive(tm, tmp_path, monkeypatch):
     assert err is None
     assert tm.is_path_valid("universal_mail_cleaner")
 
+
+def test_download_tool_returns_error_when_destination_is_a_file(tm, tmp_path, monkeypatch):
+    """A blocked per-tool destination must not crash the installer worker."""
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    download_root.mkdir()
+    (download_root / "universal_mail_cleaner").write_text("blocked", encoding="utf-8")
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    err = tm.download_tool("universal_mail_cleaner")
+
+    assert err is not None
+    assert err.startswith("Download error: cannot prepare destination:")

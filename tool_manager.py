@@ -310,7 +310,12 @@ class ToolManager:
 
         # Prepare download directory
         dest_dir = _DOWNLOAD_DIR / tool_id
-        dest_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            dest_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            # The worker must always return an error so the installer can emit
+            # its completion signal instead of leaving the wizard blocked.
+            return f"Download error: cannot prepare destination: {exc}"
         zip_path = dest_dir / f"{tag}.zip"
 
         # Stream download with progress

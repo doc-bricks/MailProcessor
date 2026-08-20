@@ -44,6 +44,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- `tool_manager.download_tool()`: Ein durch eine Datei blockiertes Zielverzeichnis
+  wird jetzt als Rückgabefehler behandelt. Zuvor propagierte `mkdir()` den Fehler
+  aus dem Download-Thread, sodass der Setup-Assistent kein Abschluss-Signal erhielt
+  und gesperrt blieb. Ein Regressionstest deckt den Zielkonflikt ab.
 - Streunende Bugsweep-Backup-Ordner (`MailProcessor_BUGSWEEP_*_20260621.bak/`),
   verwaiste Scaffold-Icons ohne Codebezug (`assets/android-icon-*`,
   `assets/splash-icon.png`, doppelte `web_companion/apple-touch-icon*.png` und
