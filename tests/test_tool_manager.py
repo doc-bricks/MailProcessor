@@ -327,3 +327,170 @@ def test_download_tool_returns_error_when_destination_is_a_file(tm, tmp_path, mo
 
     assert err is not None
     assert err.startswith("Download error: cannot prepare destination:")
+
+
+def test_download_tool_extracts_flat_archive(tm, tmp_path, monkeypatch):
+    """download_tool() extracts flat archives without wrapper folders directly into extract_root."""
+    import io
+    import json
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("mail_imap_cleaner_v1.py", "# flat cleaner script")
+    zip_bytes = zip_buffer.getvalue()
+
+    fake_release = {
+        "tag_name": "v1.1.0",
+        "zipball_url": "https://example.com/flat.zip",
+    }
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+        def read(self, size=-1):
+            return self.data.read(size)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
+        url = req.full_url if hasattr(req, "full_url") else req
+        if urlparse(url).hostname == "api.github.com":
+            return FakeResponse(json.dumps(fake_release).encode("utf-8"))
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is None
+    assert tm.is_path_valid("universal_mail_cleaner")
+    assert tm.cfg.tools["universal_mail_cleaner"].path == str(download_root / "universal_mail_cleaner" / "extracted")
+
+
+def test_download_tool_handles_tag_with_slashes(tm, tmp_path, monkeypatch):
+    """download_tool() sanitizes release tags containing slashes to avoid FileNotFoundError."""
+    import io
+    import json
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("cleaner-v1/mail_imap_cleaner_v1.py", "# script")
+    zip_bytes = zip_buffer.getvalue()
+
+    fake_release = {
+        "tag_name": "release/v1.2.0",
+        "zipball_url": "https://example.com/release.zip",
+    }
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+        def read(self, size=-1):
+            return self.data.read(size)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
+        url = req.full_url if hasattr(req, "full_url") else req
+        if urlparse(url).hostname == "api.github.com":
+            return FakeResponse(json.dumps(fake_release).encode("utf-8"))
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is None
+    assert tm.is_path_valid("universal_mail_cleaner")
+    # Verify the zip file name was sanitized
+    assert (download_root / "universal_mail_cleaner" / "release_v1.2.0.zip").exists()
+
+
+def test_download_tool_extracts_nested_directory_archive(tm, tmp_path, monkeypatch):
+    """download_tool() locates scripts in nested subdirectories inside extracted archives."""
+    import io
+    import json
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("UniversalDocsGrabber-1.0.0/src/UniversalDocsGrabberV1.py", "# nested script")
+    zip_bytes = zip_buffer.getvalue()
+
+    fake_release = {
+        "tag_name": "v1.0.0",
+        "zipball_url": "https://example.com/nested.zip",
+    }
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+        def read(self, size=-1):
+            return self.data.read(size)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
+        url = req.full_url if hasattr(req, "full_url") else req
+        if urlparse(url).hostname == "api.github.com":
+            return FakeResponse(json.dumps(fake_release).encode("utf-8"))
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    err = tm.download_tool("universal_docs_grabber")
+    assert err is None
+    assert tm.is_path_valid("universal_docs_grabber")
+    assert tm.cfg.tools["universal_docs_grabber"].main_script == "UniversalDocsGrabberV1.py"
+
+
+def test_apply_scan_results_heals_invalid_path(tm, tmp_path):
+    """apply_scan_results() heals tools that are enabled but point to a missing/invalid path."""
+    from config import ToolConfig
+
+    # Tool is enabled but configured with non-existent directory
+    tm.cfg.tools["universal_mail_cleaner"] = ToolConfig(
+        enabled=True,
+        path=str(tmp_path / "old_deleted_dir"),
+        main_script="mail_imap_cleaner_v1.py",
+        installed_by="manual",
+    )
+    assert not tm.is_path_valid("universal_mail_cleaner")
+
+    # Rescan finds the tool at a new valid location
+    new_dir = tmp_path / "new_valid_location"
+    new_dir.mkdir()
+    (new_dir / "mail_imap_cleaner_v1.py").write_text("# healed", encoding="utf-8")
+
+    scan_res = {"universal_mail_cleaner": (str(new_dir), "mail_imap_cleaner_v1.py")}
+    added = tm.apply_scan_results(scan_res)
+
+    assert "universal_mail_cleaner" in added
+    assert tm.is_path_valid("universal_mail_cleaner")
+    assert tm.cfg.tools["universal_mail_cleaner"].path == str(new_dir)
+    assert tm.cfg.tools["universal_mail_cleaner"].installed_by == "scan"
+

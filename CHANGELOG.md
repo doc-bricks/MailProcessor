@@ -44,6 +44,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- `tool_manager.download_tool()` & `apply_scan_results()`:
+  - Skript-Erkennung bei Release-Downloads unterstützt nun flache Archive (direkt in `extract_root`) sowie verschachtelte Unterverzeichnisse (z. B. `repo-tag/src/`), wodurch Fehlermeldungen `"Could not find main script in downloaded archive"` behoben werden.
+  - Release-Tag-Namen mit Schrägstrichen (z. B. `release/v1.0.0`) oder Sonderzeichen werden für den ZIP-Dateinamen bereinigt (`safe_tag`), um `FileNotFoundError` beim Download zu verhindern.
+  - `apply_scan_results()` heilt nun auch aktivierte Tools mit verwaistem/ungültigem Pfad (`is_path_valid == False`) automatisch bei einem erneuten Scan.
+  - Vier neue Regressionstests in `tests/test_tool_manager.py` hinzugefügt.
 - `tool_manager.download_tool()`: Ein durch eine Datei blockiertes Zielverzeichnis
   wird jetzt als Rückgabefehler behandelt. Zuvor propagierte `mkdir()` den Fehler
   aus dem Download-Thread, sodass der Setup-Assistent kein Abschluss-Signal erhielt

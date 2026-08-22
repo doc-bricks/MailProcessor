@@ -151,14 +151,17 @@ class ToolManager:
         return None
 
     def apply_scan_results(self, results: dict[str, Optional[tuple[str, str]]]) -> list[str]:
-        """Register newly discovered tools. Returns list of newly found tool IDs."""
+        """Register newly discovered tools or update tools with broken paths.
+
+        Returns list of newly found or healed tool IDs.
+        """
         added = []
         for tool_id, found in results.items():
             if found is None:
                 continue
             folder, script = found
             tool_cfg = self.cfg.get_tool(tool_id)
-            if not tool_cfg.enabled:
+            if not tool_cfg.enabled or not self.is_path_valid(tool_id):
                 tool_cfg.enabled = True
                 tool_cfg.path = folder
                 tool_cfg.main_script = script
@@ -316,7 +319,8 @@ class ToolManager:
             # The worker must always return an error so the installer can emit
             # its completion signal instead of leaving the wizard blocked.
             return f"Download error: cannot prepare destination: {exc}"
-        zip_path = dest_dir / f"{tag}.zip"
+        safe_tag = re.sub(r'[\\/:*?"<>|\s]+', '_', tag).strip('._') or "latest"
+        zip_path = dest_dir / f"{safe_tag}.zip"
 
         # Stream download with progress
         try:
@@ -348,7 +352,15 @@ class ToolManager:
         except Exception as exc:
             return f"Extract error: {exc}"
 
-        # Find main script inside the extracted folder (GitHub adds a prefix dir)
+        # 1. Check extract_root directly (flat archives without wrapper directory)
+        script = self.find_script_in_folder(str(extract_root), tool_id)
+        if script:
+            self.register(tool_id, str(extract_root), script, installed_by="github")
+            if progress_cb:
+                progress_cb(100)
+            return None
+
+        # 2. Check direct subdirectories (standard GitHub zipball prefix dir)
         for child in extract_root.iterdir():
             if not child.is_dir():
                 continue
@@ -358,6 +370,20 @@ class ToolManager:
                 if progress_cb:
                     progress_cb(100)
                 return None
+
+            # 3. Check nested subdirectories (e.g. repo-tag/src or repo-tag/tool_name)
+            try:
+                for subchild in child.iterdir():
+                    if not subchild.is_dir():
+                        continue
+                    script = self.find_script_in_folder(str(subchild), tool_id)
+                    if script:
+                        self.register(tool_id, str(subchild), script, installed_by="github")
+                        if progress_cb:
+                            progress_cb(100)
+                        return None
+            except (PermissionError, OSError):
+                continue
 
         return "Could not find main script in downloaded archive"
 
