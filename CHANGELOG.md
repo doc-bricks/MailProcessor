@@ -44,6 +44,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- `installer._DownloadThread.run()`: Unexpected exceptions from a download
+  backend are now converted into a completion error and still emit
+  `finished_signal`. This prevents the setup wizard from remaining locked in
+  an active-download state; a regression test covers the worker failure path.
 - `tool_manager.download_tool()` & `apply_scan_results()`:
   - Skript-Erkennung bei Release-Downloads unterstützt nun flache Archive (direkt in `extract_root`) sowie verschachtelte Unterverzeichnisse (z. B. `repo-tag/src/`), wodurch Fehlermeldungen `"Could not find main script in downloaded archive"` behoben werden.
   - Release-Tag-Namen mit Schrägstrichen (z. B. `release/v1.0.0`) oder Sonderzeichen werden für den ZIP-Dateinamen bereinigt (`safe_tag`), um `FileNotFoundError` beim Download zu verhindern.

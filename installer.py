@@ -28,7 +28,12 @@ class _DownloadThread(QThread):
         self._tool_id = tool_id
 
     def run(self):
-        err = self._tm.download_tool(self._tool_id, self.progress.emit)
+        try:
+            err = self._tm.download_tool(self._tool_id, self.progress.emit)
+        except Exception as exc:
+            # Keep the wizard recoverable even if a future download path raises
+            # outside ToolManager's expected-error handling.
+            err = f"Download error: unexpected worker failure: {exc}"
         self.finished_signal.emit(err or "")
 
 

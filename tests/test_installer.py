@@ -111,6 +111,23 @@ def test_tools_page_blocks_completion_while_download_active(qapp):
     assert changes == [False, True]
 
 
+def test_download_thread_reports_unexpected_worker_errors(tm, monkeypatch):
+    """A worker exception must still unlock the installer download state."""
+    from installer import _DownloadThread
+
+    def raise_unexpected_error(*_args, **_kwargs):
+        raise RuntimeError("simulated unexpected failure")
+
+    monkeypatch.setattr(tm, "download_tool", raise_unexpected_error)
+    thread = _DownloadThread(tm, "universal_mail_cleaner")
+    messages = []
+    thread.finished_signal.connect(messages.append)
+
+    thread.run()
+
+    assert messages == ["Download error: unexpected worker failure: simulated unexpected failure"]
+
+
 def test_rescan_blocked_while_download_active(qapp, tm):
     """Regression: _on_rescan() darf die UI nicht neu aufbauen, wenn noch Download-Threads
     laufen. Ein Rebuild löscht die Widgets per deleteLater(); die _on_done-Closures der
