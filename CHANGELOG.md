@@ -9,6 +9,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Platform/status contract readback (2026-08-26)**:
+  - Confirmed that Windows desktop is the only active product line and that the
+    removed web/PWA/Capacitor files are historical, not open implementation gates.
+  - Linked the macOS/Linux source smoke and the separate native/device and Store
+    evidence required before any broader platform claim.
+  - Verified 73/73 Pytest tests, source-platform smoke, Compileall, active
+    documentation links, UTF-8/NUL hygiene, and whitespace consistency.
 - **Fail-closed Microsoft Store readiness gate (2026-08-16)**:
   - Added `store_readiness.py` with human-readable and JSON output for release
     hashes, Store metadata, AppxManifest capabilities, privacy/support files,

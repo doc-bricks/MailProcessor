@@ -95,7 +95,13 @@ remains. The audit never builds, signs, uploads, or submits a package.
 MailProcessor is a Windows desktop tray launcher. The former web/PWA companion
 was intentionally removed after its use-case review; the redacted snapshot is
 not a synchronization interface or a mobile product. macOS and Linux retain a
-source-level contract only, not a packaged end-user release.
+source-level contract only, not a packaged end-user release; its reproducible
+check and explicit non-goals are documented in
+[MACOS_LINUX_SOURCE_SMOKE.md](MACOS_LINUX_SOURCE_SMOKE.md). Android/iOS,
+Capacitor, and server synchronization have no active product surface. A future
+native or device claim requires a new product decision plus its own build and
+device/emulator acceptance. Store blockers and the next required evidence are
+tracked in [RELEASES.md](RELEASES.md#current-platform-scope-2026-08-26).
 
 ## Requirements
 
@@ -110,7 +116,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Current local test suite: 66 Pytest tests.
+Current local test suite: 73 Pytest tests.
 
 ## Configuration
 

@@ -99,7 +99,13 @@ MailProcessor ist ein Windows-Desktop-Tray-Launcher. Der frühere Web-/PWA-
 Companion wurde nach der Usecase-Prüfung bewusst entfernt; der redigierte
 Snapshot ist weder eine Synchronisationsschnittstelle noch ein mobiles Produkt.
 Für macOS und Linux existiert nur ein Quellcodevertrag, keine paketierte
-Endnutzer-Distribution.
+Endnutzer-Distribution; reproduzierbarer Check und Nicht-Ziele stehen in
+[MACOS_LINUX_SOURCE_SMOKE.md](MACOS_LINUX_SOURCE_SMOKE.md). Android/iOS,
+Capacitor und Server-Synchronisierung haben keine aktive Produktfläche. Eine
+künftige Native- oder Gerätebehauptung braucht eine neue Produktentscheidung
+sowie einen eigenen Build und eine Geräte-/Emulatorabnahme. Store-Blocker und
+die nächste erforderliche Evidenz stehen in
+[RELEASES.md](RELEASES.md#current-platform-scope-2026-08-26).
 
 ## Voraussetzungen
 
@@ -114,7 +120,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Aktuelle lokale Testsuite: 66 Pytest-Tests.
+Aktuelle lokale Testsuite: 73 Pytest-Tests.
 
 ## Konfiguration
 

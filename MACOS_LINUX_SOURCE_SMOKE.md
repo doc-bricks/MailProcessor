@@ -1,6 +1,6 @@
 # macOS-/Linux-Source-Smoke
 
-Stand: 2026-07-03
+Stand: 2026-08-26
 
 ## Ziel
 
