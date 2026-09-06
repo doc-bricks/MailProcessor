@@ -2,12 +2,11 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import (
     QWizard, QWizardPage, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QCheckBox, QPushButton, QFileDialog,
-    QLineEdit, QGroupBox, QScrollArea, QWidget, QSizePolicy,
-    QProgressDialog,
+    QLineEdit, QGroupBox, QWidget,
 )
 
 import config as cfg_module

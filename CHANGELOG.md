@@ -9,6 +9,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Technical Hygiene, CI Workflow Hardening & Metadata Contract Suite (2026-09-06)**:
+  - **CI Workflow Hardening**: Upgraded `.github/workflows/tests.yml` to official stable actions (`actions/checkout@v4`, `actions/setup-python@v5` with pip cache), added concurrency control with `cancel-in-progress: true`, added a dedicated `ruff check .` linting gate on Windows, and added a multi-OS `source-smoke` matrix job across Ubuntu and macOS for Python 3.10-3.12 executing `source_platform_smoke.py` and `test_source_platform_smoke_contract.py`.
+  - **PEP 621 Metadata**: Enhanced `pyproject.toml` with standard classifiers (`Environment :: Win32 (MS Windows)`, `Environment :: X11 Applications :: Qt`, `Topic :: Communications :: Email`, `Topic :: Desktop Environment`, `Topic :: Utilities`), complete ecosystem URLs (Homepage, Repository, Bug Tracker, Changelog, Documentation, Security, Parent Organization, Umbrella Ecosystem), and `[tool.ruff]` configuration.
+  - **Code & Lint Hygiene**: Resolved 18 lint issues reported by `ruff check .`, cleaning unused imports and variables across `config.py`, `installer.py`, `settings_dialog.py`, `tests/test_i18n.py`, `tests/test_installer.py`, `tests/test_settings_dialog.py`, and `tests/test_tray_icon.py`.
+  - **Bilingual Security Policy**: Hardened `SECURITY.md` with supported versions table (`0.1.x`), 48-hour response SLA, official security contacts (`security@ellmos.ai`, `support@lukasgeiger.com`, `lukas@open-bricks.org`), GitHub Security Advisories link, and explicit core invariants (Local-First & Zero-Egress, Non-Elevation, Zip-Slip path traversal protection, local config isolation).
+  - **Gitignore Hardening**: Added `.ruff_cache/`, `.coverage`, `htmlcov/`, `*.sync-conflict-*`, and patch patterns to `.gitignore`.
+  - **Contract Test Suite**: Added `tests/test_metadata.py` with 6 automated contract tests covering CI workflow integrity, PEP 621 metadata, security policy invariants, gitignore rules, README bilingual parity, and `llms.txt` integrity. Test suite expanded from 73 to 79 tests (100% pass).
+  - **Documentation Parity**: Updated `README.md` and `README-DE.md` with test pass badges (79 passed), security policy badges, umbrella ecosystem badges, and synchronized test counts. Updated `llms.txt` timestamp to 2026-09-06 and verified test status.
+
 - **Platform/status contract readback (2026-08-26)**:
   - Confirmed that Windows desktop is the only active product line and that the
     removed web/PWA/Capacitor files are historical, not open implementation gates.

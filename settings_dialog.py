@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
     QTableWidget, QTableWidgetItem, QHeaderView, QPushButton,
     QLabel, QComboBox, QCheckBox, QMessageBox, QFileDialog,
-    QAbstractItemView, QSizePolicy,
+    QAbstractItemView,
 )
 
 import config as cfg_module

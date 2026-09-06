@@ -1,8 +1,5 @@
 """Tests for i18n.py — key coverage, formatting, language switching."""
-import pytest
-
-import i18n
-from i18n import tr, set_language, get_language, _STRINGS
+from i18n import _STRINGS, get_language, set_language, tr
 
 
 def test_all_keys_have_de_and_en():

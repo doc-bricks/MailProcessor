@@ -10,7 +10,10 @@ System tray launcher for the three Universal Mail Tools.
 
 [![MailProcessor tests](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml/badge.svg)](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Tests: 79 passed](https://img.shields.io/badge/tests-79%20passed-brightgreen.svg)](tests/)
+[![Security: Policy](https://img.shields.io/badge/security-SECURITY.md-blue.svg)](SECURITY.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Umbrella: open-bricks](https://img.shields.io/badge/umbrella-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
 
 > [!NOTE]
@@ -116,7 +119,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Current local test suite: 73 Pytest tests.
+Current local test suite: 79 Pytest tests.
 
 ## Configuration
 

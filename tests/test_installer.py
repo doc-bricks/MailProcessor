@@ -1,6 +1,5 @@
 """Tests for installer.py - wizard state and download tracking."""
 
-import copy
 import os
 
 import pytest

@@ -2,6 +2,9 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 *.egg-info/
 
 # Local config (contains tool paths)
@@ -32,6 +35,13 @@ releases/
 *.exe
 *.msix
 SHA256SUMS.txt
+
+# Sync & patch artifacts
+*.sync-conflict-*
+*.conflict
+*-CONFLIT-*
+*.patch
+*.diff
 
 # Internal task tracking (BACH internal, never publish)
 AUFGABEN.txt

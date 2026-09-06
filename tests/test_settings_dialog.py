@@ -1,7 +1,5 @@
 """Tests for settings_dialog.py — rescan feedback and tool management."""
 import os
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -23,7 +21,6 @@ def test_rescan_shows_rescan_done_when_tools_added(qapp, tmp_path, monkeypatch):
     """_on_rescan() shows 'rescan_done' message when new tools are detected."""
     set_language("de")
     from settings_dialog import SettingsDialog
-    from tool_manager import ToolManager
 
     cfg = AppConfig()
     dlg = SettingsDialog(cfg)

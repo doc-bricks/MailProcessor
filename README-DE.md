@@ -10,7 +10,10 @@ System-Tray-Launcher für die drei Universal Mail Tools.
 
 [![MailProcessor tests](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml/badge.svg)](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/Lizenz-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests: 79 bestanden](https://img.shields.io/badge/tests-79%20bestanden-brightgreen.svg)](tests/)
+[![Sicherheit: Richtlinie](https://img.shields.io/badge/sicherheit-SECURITY.md-blue.svg)](SECURITY.md)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Dachverband: open-bricks](https://img.shields.io/badge/dachverband-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
 
 > [!NOTE]
@@ -120,7 +123,7 @@ python -m pytest -q
 python -m compileall .
 ```
 
-Aktuelle lokale Testsuite: 73 Pytest-Tests.
+Aktuelle lokale Testsuite: 79 Pytest-Tests.
 
 ## Konfiguration
 

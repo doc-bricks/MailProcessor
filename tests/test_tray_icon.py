@@ -69,7 +69,7 @@ def test_pyside6_keeps_context_menu_alive_after_gc():
 
     from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
-    app = QApplication.instance() or QApplication([])
+    _app = QApplication.instance() or QApplication([])
     icon = QSystemTrayIcon()
     local_menu = QMenu()
     local_menu.addAction("MarkAction")
@@ -87,7 +87,7 @@ def test_build_menu_stores_menu_as_instance_variable():
     from config import AppConfig
     from tray import MailProcessorTray
 
-    app = QApplication.instance() or QApplication([])
+    _app = QApplication.instance() or QApplication([])
     cfg = AppConfig()
     tray_icon = MailProcessorTray(cfg)
 

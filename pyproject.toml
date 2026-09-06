@@ -12,16 +12,29 @@ license = {text = "MIT"}
 authors = [
     {name = "doc-bricks"}
 ]
-keywords = ["pyside6", "system-tray", "mail-tools", "email-manager", "windows-tray", "imap"]
+keywords = [
+    "pyside6",
+    "system-tray",
+    "mail-tools",
+    "email-manager",
+    "windows-tray",
+    "imap",
+    "local-first",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: X11 Applications :: Qt",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Operating System :: Microsoft :: Windows",
+    "Topic :: Communications :: Email",
+    "Topic :: Desktop Environment",
+    "Topic :: Utilities",
 ]
 dependencies = [
     "PySide6>=6.6.0",
@@ -31,8 +44,24 @@ dependencies = [
 Homepage = "https://github.com/doc-bricks/MailProcessor"
 Repository = "https://github.com/doc-bricks/MailProcessor"
 "Bug Tracker" = "https://github.com/doc-bricks/MailProcessor/issues"
+Changelog = "https://github.com/doc-bricks/MailProcessor/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/doc-bricks/MailProcessor#readme"
+Security = "https://github.com/doc-bricks/MailProcessor/blob/main/SECURITY.md"
+"Parent Organization" = "https://github.com/doc-bricks"
+"Umbrella Ecosystem" = "https://github.com/open-bricks"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/source_platform_smoke.py" = ["E402"]
