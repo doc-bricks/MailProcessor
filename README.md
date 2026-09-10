@@ -6,18 +6,44 @@
 
 System tray launcher for the three Universal Mail Tools.
 
-> **Deutsche Dokumentation:** [README-DE.md](README-DE.md)
+> **Language:** [English](README.md) · [Deutsch](README-DE.md)
 
 [![MailProcessor tests](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml/badge.svg)](https://github.com/doc-bricks/MailProcessor/actions/workflows/tests.yml)
+[![Version: 0.1.0](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows%20(System%20Tray)-0078D6.svg?logo=windows&logoColor=white)](https://github.com/doc-bricks/MailProcessor)
+[![GUI: PySide6 Qt](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52.svg?logo=qt&logoColor=white)](https://pypi.org/project/PySide6/)
 [![Tests: 79 passed](https://img.shields.io/badge/tests-79%20passed-brightgreen.svg)](tests/)
 [![Security: Policy](https://img.shields.io/badge/security-SECURITY.md-blue.svg)](SECURITY.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Security SLA: 48h Response](https://img.shields.io/badge/security%20SLA-48h%20response-blue.svg)](SECURITY.md)
+[![Privacy: 100% Local--First](https://img.shields.io/badge/privacy-100%25%20Local--First-blueviolet.svg)](SECURITY.md)
+[![Code Style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Umbrella: open-bricks](https://img.shields.io/badge/umbrella-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > [!NOTE]
 > For AI agents and automated tools, key architecture and interface metadata are indexed in [llms.txt](llms.txt).
+
+---
+
+### Quick Navigation
+
+- [What it does](#what-it-does)
+- [Features](#features)
+- [System Architecture & Workflow](#system-architecture--workflow)
+- [Lifecycle & Execution Sequence](#lifecycle--execution-sequence)
+- [Installation](#installation)
+- [Windows Release](#windows-release)
+- [Platform Scope](#platform-scope)
+- [Governance & Runtime Invariants](#governance--runtime-invariants)
+- [Requirements](#requirements)
+- [Development Checks](#development-checks)
+- [Configuration](#configuration)
+- [Related Tools](#related-tools)
+- [License](#license)
+
+---
 
 ![MailProcessor Installer](README/screenshots/main.png)
 
@@ -43,14 +69,65 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 ## System Architecture & Workflow
 
 ```mermaid
-graph TD
-    Tray["Windows System Tray (MailProcessor)"] --> Wizard["Setup Wizard & Tool Scanner"]
-    Tray --> Config["%LOCALAPPDATA%/MailProcessor/config.json"]
-    Tray --> Snapshot["Snapshot Exporter (mailprocessor-suite-v1.json)"]
-    Tray --> Tool1["Universal Mail Cleaner"]
-    Tray --> Tool2["Universal Docs Grabber"]
-    Tray --> Tool3["Universal Invoice Mail"]
-    Wizard --> GitHub["GitHub Releases Auto-Downloader"]
+flowchart TD
+    User(["User (Desktop Interaction)"]) -->|"right-click / click"| Tray["Windows System Tray (MailProcessor)"]
+
+    subgraph Core ["MailProcessor Desktop Core"]
+        Tray -->|"reads / writes state"| Config["Config Manager<br/>(%LOCALAPPDATA%/MailProcessor/config.json)"]
+        Tray -->|"opens configuration"| SettingsDialog["Settings Dialog (Paths & Autostart)"]
+        Tray -->|"exports offline state"| Snapshot["Snapshot Exporter (mailprocessor-suite-v1.json)"]
+        Tray -->|"first launch / missing tools"| Wizard["Setup Wizard & Local Scanner"]
+        Wizard -->|"downloads releases"| Downloader["GitHub Releases Downloader (Zip-Slip Safe)"]
+    end
+
+    subgraph Tools ["Universal Mail Suite (Subprocesses)"]
+        Tray -->|"launches tool (subprocess)"| Tool1["Universal Mail Cleaner<br/>(Rule-based IMAP Mailbox Cleaner)"]
+        Tray -->|"launches tool (subprocess)"| Tool2["Universal Docs Grabber<br/>(Document & Attachment Grabber)"]
+        Tray -->|"launches tool (subprocess)"| Tool3["Universal Invoice Mail<br/>(Automated Invoice Extractor)"]
+    end
+
+    Downloader -->|"installs archive to"| LocalTools["%LOCALAPPDATA%/MailProcessor/tools/"]
+    LocalTools -.->|"provides binaries"| Tools
+```
+
+## Lifecycle & Execution Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as "Desktop User"
+    participant Tray as "Tray Application (PySide6)"
+    participant Cfg as "ConfigManager"
+    participant Wiz as "Setup Wizard / Downloader"
+    participant GH as "GitHub Releases API"
+    participant Proc as "Subprocess Runner"
+    participant Tool as "Universal Mail Tool"
+
+    User->>Tray: Launch MailProcessor (main.py / start.bat)
+    Tray->>Cfg: Load settings (%LOCALAPPDATA%/MailProcessor/config.json)
+    alt First Run / Unconfigured Tools
+        Tray->>Wiz: Show Setup Wizard
+        Wiz->>Wiz: Scan sibling folders for installed tools
+        opt Download missing tools
+            Wiz->>GH: Fetch latest release assets (Zip-Slip protected)
+            GH-->>Wiz: Release archive ZIP
+            Wiz->>Wiz: Extract to %LOCALAPPDATA%/MailProcessor/tools/
+        end
+        Wiz->>Cfg: Save discovered & configured tool paths
+    end
+    Tray-->>User: System tray icon active in notification area
+
+    User->>Tray: Right-click tray icon & select tool
+    Tray->>Proc: launch_tool(tool_id, tool_path)
+    Proc->>Tool: Spawn unprivileged detached process (RunAsInvoker)
+    Tool-->>User: Universal Mail Tool GUI opens (Clean / Grab / Invoice)
+
+    opt Snapshot Export
+        User->>Tray: Select "Export Snapshot"
+        Tray->>Cfg: Read tool versions & metadata
+        Tray->>Tray: Sanitize paths & write mailprocessor-suite-v1.json
+        Tray-->>User: Confirmation notification
+    end
 ```
 
 ## Installation
@@ -93,7 +170,7 @@ python store_readiness.py --release-dir <existing-vX.Y.Z-release-folder> --json
 Exit code `0` means every gate passed; exit code `2` means at least one blocker
 remains. The audit never builds, signs, uploads, or submits a package.
 
-## Platform scope
+## Platform Scope
 
 MailProcessor is a Windows desktop tray launcher. The former web/PWA companion
 was intentionally removed after its use-case review; the redacted snapshot is
@@ -106,13 +183,28 @@ native or device claim requires a new product decision plus its own build and
 device/emulator acceptance. Store blockers and the next required evidence are
 tracked in [RELEASES.md](RELEASES.md#current-platform-scope-2026-08-26).
 
+## Governance & Runtime Invariants
+
+The following invariants define the operational and security guarantees of MailProcessor:
+
+| Invariant ID | Name | Standard / Policy | Verification & Guarantee |
+|---|---|---|---|
+| `INV-LOCAL-01` | **100% Local-First & Zero Egress** | Offline Privacy Standard | Operates entirely on the local machine. No telemetry, no background analytics, no cloud relay, and zero storage of email content, passwords, or credentials. |
+| `INV-NOELEV-02` | **Non-Elevation & RunAsInvoker** | Windows Least Privilege | Runs exclusively as standard unprivileged user. Never requests UAC elevation (`runAsInvoker`). |
+| `INV-ZIPSLIP-03` | **Zip-Slip Traversal Defense** | CWE-22 Security Standard | Tool downloads from GitHub releases validate archive member paths to prevent directory traversal attacks before extraction. |
+| `INV-CFGISO-04` | **Local AppData Isolation** | Windows AppData Convention | Configuration is isolated under `%LOCALAPPDATA%\MailProcessor\config.json`. No registry pollution except optional per-user autostart entry. |
+| `INV-PROCLIF-05` | **Safe Subprocess Lifecycle** | Clean Process Separation | Launches Universal Mail Tools via detached unprivileged subprocesses (`subprocess.Popen`) preventing parent tray lockups or cascaded crashes. |
+| `INV-REDACT-06` | **Deterministic Snapshot Redaction** | Data Minimization | `mailprocessor-suite-v1.json` exports redact machine-specific absolute paths to protect user privacy in shared or offline bug reports. |
+| `INV-OSPAR-07` | **Cross-Platform Source Smoke Contract** | Multi-OS Integrity | Primary product surface is Windows Desktop Tray; multi-platform smoke test matrix verifies source-level compatibility across Ubuntu and macOS. |
+| `INV-SLA-08` | **Security Response & Triage SLA** | Responsible Disclosure | 48-hour response SLA and 5-business-day triage commitment through `security@ellmos.ai` and GitHub Security Advisories. |
+
 ## Requirements
 
 - Python 3.10+
 - PySide6 6.x
 - One or more Universal Mail Tools (auto-downloaded via wizard)
 
-## Development checks
+## Development Checks
 
 ```bash
 python -m pytest -q
@@ -129,13 +221,17 @@ Tools are installed to `%LOCALAPPDATA%\MailProcessor\tools\`.
 
 ## Related Tools
 
-Part of the [doc-bricks](https://github.com/doc-bricks) mail suite:
+Part of the [doc-bricks](https://github.com/doc-bricks) mail suite and [open-bricks](https://github.com/open-bricks) umbrella:
 
-| Tool | Description |
-|------|-------------|
-| [UniversalMailCleaner](https://github.com/doc-bricks/UniversalMailCleaner) | Rule-based IMAP mailbox cleaner with safe mode |
-| [UniversalDocsGrabber](https://github.com/doc-bricks/UniversalDocsGrabber) | Download documents and attachments from IMAP mail |
-| [UniversalInvoiceMail](https://github.com/doc-bricks/UniversalInvoiceMail) | Extract invoices and receipts from IMAP mail |
+| Tool | Category | Role & Description | Status | Repository |
+|------|----------|-------------------|--------|------------|
+| [UniversalMailCleaner](https://github.com/doc-bricks/UniversalMailCleaner) | Mail Hygiene | Rule-based IMAP mailbox cleaner with safe mode | Active / Supported | `doc-bricks/UniversalMailCleaner` |
+| [UniversalDocsGrabber](https://github.com/doc-bricks/UniversalDocsGrabber) | Mail Extraction | Download documents and attachments from IMAP mail | Active / Supported | `doc-bricks/UniversalDocsGrabber` |
+| [UniversalInvoiceMail](https://github.com/doc-bricks/UniversalInvoiceMail) | Mail Extraction | Extract invoices and receipts automatically from IMAP mail | Active / Supported | `doc-bricks/UniversalInvoiceMail` |
+| [FormularErstellen](https://github.com/doc-bricks/FormularErstellen) | Document Tools | Interactive form generator and document template engine | Sibling Tool | `doc-bricks/FormularErstellen` |
+| [PDFtoPDFocr](https://github.com/doc-bricks/PDFtoPDFocr) | Document OCR | Searchable PDF OCR pipeline and document text recognition | Sibling Tool | `doc-bricks/PDFtoPDFocr` |
+| [DokuZen](https://github.com/doc-bricks/DokuZen) | Knowledge Hub | Desktop document organizer, file classifier, and knowledge hub | Sibling Tool | `doc-bricks/DokuZen` |
+| [open-bricks](https://github.com/open-bricks) | Umbrella | Umbrella ecosystem, shared policies, and open-source catalog | Umbrella Hub | `open-bricks/open-bricks` |
 
 ## License
 

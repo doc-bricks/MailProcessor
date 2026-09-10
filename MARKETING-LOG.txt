@@ -20,3 +20,31 @@ Path: Path B (Discoverability, Projektauftritt, Nutzerführung & Sichtbarkeit)
 
 4. **Integration with open-bricks & Ecosystem Navigation**:
    - Cross-link MailProcessor on the `open-bricks` portal landing page as the central desktop hub for the `doc-bricks` mail tools suite.
+
+---
+
+## Path B Review (2026-09-10) — Pfad B Marketing & Discoverability Audit
+
+Status: COMPLETED (Bilingual Parity, Dual Mermaid Diagrams, Governance Invariants, Enhanced Badges)
+Auditor: Gemini (Antigravity Agent)
+Test Suite: 79/79 passing
+
+### Completed Automated Upgrades:
+- Upgraded `README.md` and `README-DE.md` to dual-Mermaid architecture:
+  - System architecture flowchart (`flowchart TD`)
+  - Execution lifecycle sequence diagram (`sequenceDiagram` with `autonumber`)
+  - Full compliance with `HOOK-BANNER-ASSET-01` (all node/edge labels strictly quoted).
+- Added quick navigation / table of contents and bilingual switchers.
+- Formalized 8 Governance & Runtime Invariants (`INV-LOCAL-01` to `INV-SLA-08`).
+- Expanded Shields.io badges (Windows System Tray, PySide6 Qt GUI, 100% Local-First privacy, 48h security SLA, ruff code style).
+- Added cross-ecosystem matrix linking all doc-bricks sibling tools and open-bricks umbrella.
+- Added contract tests in `tests/test_metadata.py` ensuring long-term architectural regression safety.
+- Bumped `llms.txt` to 2026-09-10 with documented invariants and diagram structures.
+
+### Non-Automated Marketing Recommendations for User / Admin:
+1. **GitHub Social Preview & OpenGraph Card**:
+   - The repository currently uses the default GitHub card. Upload `assets/banner.png` (or 1280x640 social preview) into Repo Settings -> General -> Social Preview.
+2. **WinGet Manifest Submission**:
+   - Create a winget package manifest for `doc-bricks.MailProcessor` under `microsoft/winget-pkgs` for seamless `winget install doc-bricks.MailProcessor`.
+3. **Short GIF Demo / Video Clip**:
+   - Record an animated GIF showing: launch from Windows tray -> right click -> 1-click launch of Universal Mail Cleaner or Docs Grabber.

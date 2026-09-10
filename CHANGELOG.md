@@ -7,6 +7,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Marketing, Discoverability & Architecture
+
+- **Pfad B Marketing, Bilingual Navigation & Governance Invariants (2026-09-10)**:
+  - **Dual Mermaid Diagrams**: Upgraded `README.md` and `README-DE.md` with dual diagrams compliant with `HOOK-BANNER-ASSET-01` (all node/edge labels strictly quoted):
+    1. System architecture and component flow (`flowchart TD`) connecting user interaction, PySide6 desktop core, isolated `%LOCALAPPDATA%` storage, setup wizard, Zip-Slip-protected GitHub installer, and detached subprocess tool runners.
+    2. End-to-end execution lifecycle sequence diagram (`sequenceDiagram` with `autonumber`) illustrating app launch, automatic sibling scanning, GitHub release downloads, unprivileged subprocess invocation (`RunAsInvoker`), and redacted snapshot export.
+  - **Bilingual Parity & Quick Navigation**: Added table-of-contents quick navigation and language switcher to both English and German READMEs. Added expanded Shields.io badges for Windows System Tray platform, PySide6 Qt GUI, 100% Local-First privacy, 48h security SLA, and ruff code style.
+  - **Governance & Runtime Invariants**: Formalized operational guarantees in both READMEs across eight explicit invariants (`INV-LOCAL-01` Zero Egress, `INV-NOELEV-02` Non-Elevation, `INV-ZIPSLIP-03` Zip-Slip Defense, `INV-CFGISO-04` Local AppData Isolation, `INV-PROCLIF-05` Subprocess Lifecycle, `INV-REDACT-06` Deterministic Snapshot Redaction, `INV-OSPAR-07` Cross-Platform Smoke Matrix, `INV-SLA-08` Security Response & Triage SLA).
+  - **Doc-Bricks Ecosystem Matrix**: Expanded related tools table covering all sibling doc-bricks tools (UniversalMailCleaner, UniversalDocsGrabber, UniversalInvoiceMail, FormularErstellen, PDFtoPDFocr, DokuZen) and open-bricks umbrella governance.
+  - **Contract Test Suite**: Expanded `tests/test_metadata.py` with automated assertions verifying sequence diagram syntax, invariant presence in both languages, and quick navigation structure.
+  - **LLM Context & Metadata**: Updated `llms.txt` timestamp to 2026-09-10 and documented invariants and dual diagrams.
+
 ### Maintenance
 
 - **Technical Hygiene, CI Workflow Hardening & Metadata Contract Suite (2026-09-06)**:

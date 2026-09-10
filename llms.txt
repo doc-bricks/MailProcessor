@@ -1,10 +1,11 @@
-## Last-checked: 2026-09-06
+## Last-checked: 2026-09-10
 
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
 Verified status: 79/79 Pytest tests passing; source-platform smoke PASS
 Organization: doc-bricks
+Umbrella: open-bricks
 Primary language: Python
 UI stack: PySide6 desktop tray application
 License: MIT
@@ -27,6 +28,24 @@ Core behavior:
 - Provides a read-only `store_readiness.py` CLI with text and JSON output; the
   Microsoft Store channel stays deferred until every integrity, FullTrust,
   privacy/support, MSIX, and WACK gate passes.
+
+Visual architecture & diagrams:
+
+- Dual Mermaid diagrams in README.md & README-DE.md:
+  1. Component architecture flowchart (`flowchart TD`)
+  2. End-to-end execution lifecycle sequence diagram (`sequenceDiagram`)
+- All node labels and edge labels strictly quoted per HOOK-BANNER-ASSET-01.
+
+Governance & runtime invariants:
+
+- INV-LOCAL-01: 100% Local-First & Zero Egress
+- INV-NOELEV-02: Non-Elevation & RunAsInvoker
+- INV-ZIPSLIP-03: CWE-22 Zip-Slip Traversal Defense
+- INV-CFGISO-04: Local AppData Isolation (%LOCALAPPDATA%\MailProcessor\config.json)
+- INV-PROCLIF-05: Safe Subprocess Lifecycle (detached process spawn)
+- INV-REDACT-06: Deterministic Snapshot Redaction (sanitized export)
+- INV-OSPAR-07: Cross-Platform Source Smoke Contract (Ubuntu, macOS smoke)
+- INV-SLA-08: Security Response & Triage SLA (48h acknowledgment, 5-day triage)
 
 Privacy boundary:
 

@@ -146,15 +146,42 @@ def test_readme_bilingual_parity():
     assert "README-DE.md" in readme_en
     assert "README.md" in readme_de
 
-    # Architecture diagram in both
+    # Architecture and sequence diagrams in both
     assert "```mermaid" in readme_en
     assert "```mermaid" in readme_de
+    assert "flowchart TD" in readme_en
+    assert "flowchart TD" in readme_de
+    assert "sequenceDiagram" in readme_en
+    assert "sequenceDiagram" in readme_de
+    assert "autonumber" in readme_en
+    assert "autonumber" in readme_de
+
+    # Tool names
     assert "Universal Mail Cleaner" in readme_en
     assert "Universal Mail Cleaner" in readme_de
 
     # LLM readiness
     assert "llms.txt" in readme_en
     assert "llms.txt" in readme_de
+
+    # Quick navigation
+    assert "Quick Navigation" in readme_en
+    assert "Schnellnavigation" in readme_de
+
+    # Governance invariants in both
+    expected_invariants = [
+        "INV-LOCAL-01",
+        "INV-NOELEV-02",
+        "INV-ZIPSLIP-03",
+        "INV-CFGISO-04",
+        "INV-PROCLIF-05",
+        "INV-REDACT-06",
+        "INV-OSPAR-07",
+        "INV-SLA-08",
+    ]
+    for inv_id in expected_invariants:
+        assert inv_id in readme_en, f"Invariant {inv_id} missing from README.md"
+        assert inv_id in readme_de, f"Invariant {inv_id} missing from README-DE.md"
 
     # Sibling tools
     for tool_name in ("UniversalMailCleaner", "UniversalDocsGrabber", "UniversalInvoiceMail"):
@@ -168,9 +195,14 @@ def test_llms_txt_integrity():
 
     assert "https://github.com/doc-bricks/MailProcessor" in llms_content
     assert "doc-bricks" in llms_content
+    assert "open-bricks" in llms_content
     assert "PySide6 desktop tray application" in llms_content
     assert "UniversalMailCleaner" in llms_content
     assert "UniversalDocsGrabber" in llms_content
     assert "UniversalInvoiceMail" in llms_content
     assert "source-platform smoke PASS" in llms_content
     assert "%LOCALAPPDATA%\\MailProcessor\\config.json" in llms_content
+    assert "INV-LOCAL-01" in llms_content
+    assert "INV-SLA-08" in llms_content
+    assert "flowchart TD" in llms_content
+    assert "sequenceDiagram" in llms_content
