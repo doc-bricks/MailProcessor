@@ -136,3 +136,43 @@ def test_tool_action_buttons_require_selection_and_expose_tool_context(qapp, tmp
     assert dlg._change_btn.toolTip() == "Pfad ändern: Universal Mail Cleaner"
     assert dlg._remove_btn.toolTip() == "Entfernen: Universal Mail Cleaner"
     assert "IMAP-Postfach nach Regeln bereinigen" in dlg._change_btn.accessibleDescription()
+
+
+def test_settings_dialog_accessibility_metadata(qapp):
+    """SettingsDialog exposes accessible names, descriptions, and label buddies."""
+    set_language("de")
+    from settings_dialog import SettingsDialog
+    from PySide6.QtWidgets import QPushButton
+
+    cfg = AppConfig()
+    dlg = SettingsDialog(cfg)
+
+    # Tools tab table accessibility
+    assert dlg._table.accessibleName() == "Tools"
+    assert dlg._table.accessibleDescription() == (
+        "Übersicht der konfigurierten Mail-Tools mit aktuellem Status und Skriptpfad"
+    )
+
+    # Rescan button accessibility
+    rescan_btn = next(
+        btn for btn in dlg.findChildren(QPushButton)
+        if btn.text() == "Erneut scannen"
+    )
+    assert rescan_btn.toolTip() == "Nach lokal installierten Mail-Tools suchen"
+    assert rescan_btn.accessibleDescription() == "Nach lokal installierten Mail-Tools suchen"
+
+    # General tab accessibility
+    assert dlg._autostart_cb.accessibleDescription() == (
+        "(Startet MailProcessor beim Windows-Login automatisch)"
+    )
+    assert dlg._lang_combo.accessibleName() == "Sprache:"
+    assert dlg._lang_combo.accessibleDescription() == "Sprache:"
+
+    # Verify English localization parity
+    set_language("en")
+    dlg_en = SettingsDialog(cfg)
+    assert dlg_en._table.accessibleDescription() == (
+        "Overview of configured Mail Tools with current status and script path"
+    )
+    assert dlg_en._lang_combo.accessibleName() == "Language:"
+    set_language("de")

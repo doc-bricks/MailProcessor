@@ -51,8 +51,12 @@ class WelcomePage(QWizardPage):
         layout.addWidget(text)
 
         lang_row = QHBoxLayout()
-        lang_row.addWidget(QLabel(tr("page_language_label")))
+        lang_label = QLabel(tr("page_language_label"))
+        lang_row.addWidget(lang_label)
         self._lang_box = QComboBox()
+        lang_label.setBuddy(self._lang_box)
+        self._lang_box.setAccessibleName(tr("page_language_label"))
+        self._lang_box.setAccessibleDescription(tr("page_language_label"))
         self._lang_box.addItem(tr("lang_de"), "de")
         self._lang_box.addItem(tr("lang_en"), "en")
         idx = 0 if get_language() == "de" else 1
@@ -135,15 +139,22 @@ class ToolsPage(QWizardPage):
         layout.setSpacing(10)
 
         scan_btn = QPushButton(tr("page_tools_scan_btn"))
+        scan_btn.setToolTip(tr("btn_rescan_tip"))
+        scan_btn.setAccessibleName(tr("page_tools_scan_btn"))
+        scan_btn.setAccessibleDescription(tr("btn_rescan_tip"))
         scan_btn.clicked.connect(self._on_rescan)
         layout.addWidget(scan_btn)
 
         self._checkboxes = {}
         for tid, meta in TOOL_DEFINITIONS.items():
             found = self._scan_results.get(tid)
-            cb = QCheckBox(self._tm.tool_display_name(tid))
+            tool_name = self._tm.tool_display_name(tid)
+            tool_desc = self._tm.tool_description(tid)
+            cb = QCheckBox(tool_name)
             cb.setChecked(previous_selection.get(tid, bool(found)))
-            cb.setToolTip(self._tm.tool_description(tid))
+            cb.setToolTip(tool_desc)
+            cb.setAccessibleName(tool_name)
+            cb.setAccessibleDescription(tool_desc)
 
             status_label = QLabel()
             if found:
@@ -163,7 +174,12 @@ class ToolsPage(QWizardPage):
             if not found and meta.get("github_repo"):
                 dl_btn = QPushButton(tr("btn_download"))
                 dl_btn.setFixedWidth(160)
-                dl_btn.setToolTip(meta["github_repo"])
+                repo_ref = meta["github_repo"]
+                repo_url = f"https://github.com/{repo_ref}" if not repo_ref.startswith("http") else repo_ref
+                dl_name = f"{tr('btn_download')}: {tool_name}"
+                dl_btn.setAccessibleName(dl_name)
+                dl_btn.setAccessibleDescription(repo_url)
+                dl_btn.setToolTip(f"{dl_name} ({repo_url})")
                 dl_btn.clicked.connect(
                     lambda _=False, t=tid, lbl=status_label, btn=dl_btn, c=cb:
                         self._start_download(t, lbl, btn, c)

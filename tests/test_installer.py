@@ -249,3 +249,42 @@ def test_paths_page_exposes_accessible_context_for_manual_path_controls(qapp, tm
     assert browse_btn.accessibleName() == f"{tool_name} - Durchsuchen"
     assert tool_name in browse_btn.accessibleDescription()
     assert browse_btn.toolTip() == f"Python-Skript für {tool_name} auswählen"
+
+
+def test_welcome_and_tools_page_expose_accessible_context(qapp, tm):
+    set_language("de")
+    from installer import WelcomePage
+
+    # WelcomePage accessibility
+    welcome = WelcomePage()
+    welcome.initializePage()
+    assert welcome._lang_box.accessibleName() == "Sprache / Language:"
+    assert welcome._lang_box.accessibleDescription() == "Sprache / Language:"
+
+    # ToolsPage accessibility
+    tools_page = ToolsPage(tm)
+    tools_page.initializePage()
+
+    scan_btn = next(
+        btn for btn in tools_page.findChildren(QPushButton)
+        if btn.text() == "Erneut scannen"
+    )
+    assert scan_btn.accessibleName() == "Erneut scannen"
+    assert scan_btn.accessibleDescription() == "Nach lokal installierten Mail-Tools suchen"
+    assert scan_btn.toolTip() == "Nach lokal installierten Mail-Tools suchen"
+
+    # Checkboxes have descriptions
+    for tid, cb in tools_page._checkboxes.items():
+        assert cb.accessibleDescription() == tm.tool_description(tid)
+        assert cb.accessibleName() == tm.tool_display_name(tid)
+
+    # Download buttons have distinct names with tool names
+    dl_buttons = [
+        btn for btn in tools_page.findChildren(QPushButton)
+        if btn.text() == "Von GitHub laden"
+    ]
+    for btn in dl_buttons:
+        assert btn.accessibleName().startswith("Von GitHub laden: ")
+        assert "https://github.com/" in btn.accessibleDescription()
+        assert btn.toolTip().startswith("Von GitHub laden: ")
+

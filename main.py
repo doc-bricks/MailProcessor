@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
 import config as cfg_module
-from i18n import set_language
+from i18n import set_language, tr
 
 
 def main():
@@ -39,8 +39,7 @@ def main():
     tray = MailProcessorTray(cfg)
     if not tray.isSystemTrayAvailable():
         from PySide6.QtWidgets import QMessageBox
-        QMessageBox.critical(None, "MailProcessor",
-                             "System Tray ist auf diesem System nicht verfügbar.")
+        QMessageBox.critical(None, tr("app_name"), tr("tray_unavailable"))
         sys.exit(1)
 
     tray.show()

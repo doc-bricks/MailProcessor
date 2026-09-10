@@ -151,6 +151,8 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(w)
 
         self._table = QTableWidget()
+        self._table.setAccessibleName(tr("tab_tools"))
+        self._table.setAccessibleDescription(tr("tool_table_desc"))
         self._table.setColumnCount(3)
         self._table.setHorizontalHeaderLabels([tr("col_tool"), tr("col_status"), tr("col_path")])
         self._table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
@@ -163,6 +165,9 @@ class SettingsDialog(QDialog):
 
         btn_row = QHBoxLayout()
         rescan_btn = QPushButton(tr("btn_rescan"))
+        rescan_btn.setToolTip(tr("btn_rescan_tip"))
+        rescan_btn.setAccessibleName(tr("btn_rescan"))
+        rescan_btn.setAccessibleDescription(tr("btn_rescan_tip"))
         rescan_btn.clicked.connect(self._on_rescan)
         self._change_btn = QPushButton(tr("btn_change_path"))
         self._change_btn.clicked.connect(self._on_change_path)
@@ -286,8 +291,12 @@ class SettingsDialog(QDialog):
         layout.setSpacing(16)
 
         lang_row = QHBoxLayout()
-        lang_row.addWidget(QLabel(tr("label_language")))
+        lang_label = QLabel(tr("label_language"))
+        lang_row.addWidget(lang_label)
         self._lang_combo = QComboBox()
+        lang_label.setBuddy(self._lang_combo)
+        self._lang_combo.setAccessibleName(tr("label_language"))
+        self._lang_combo.setAccessibleDescription(tr("label_language"))
         self._lang_combo.addItem(tr("lang_de"), "de")
         self._lang_combo.addItem(tr("lang_en"), "en")
         self._lang_combo.setCurrentIndex(0 if get_language() == "de" else 1)
@@ -297,6 +306,7 @@ class SettingsDialog(QDialog):
 
         self._autostart_cb = QCheckBox(tr("label_autostart"))
         self._autostart_cb.setChecked(self._cfg.start_with_windows)
+        self._autostart_cb.setAccessibleDescription(tr("autostart_note"))
         note = QLabel(tr("autostart_note"))
         note.setStyleSheet("color: gray; font-size: 11px;")
         layout.addWidget(self._autostart_cb)
