@@ -6,6 +6,9 @@ from pathlib import Path
 from config import AppConfig
 from snapshot_export import (
     SNAPSHOT_SCHEMA,
+    _path_hint_relative_to,
+    _read_app_version,
+    _redact_path_hint,
     _safe_localappdata_root,
     build_snapshot_payload,
     write_snapshot,
@@ -110,3 +113,59 @@ def test_safe_localappdata_root_falls_back_to_home_when_env_is_relative(monkeypa
     monkeypatch.setenv("LOCALAPPDATA", "relative-localappdata")
 
     assert _safe_localappdata_root() == Path.home()
+
+
+def test_redact_path_hint_base_paths_do_not_have_trailing_dot(tmp_path, monkeypatch):
+    localappdata = tmp_path / "LocalAppData"
+    localappdata.mkdir(parents=True)
+    monkeypatch.setattr("snapshot_export.LOCALAPPDATA_ROOT", localappdata)
+
+    # Base path itself must not end with '/.'
+    assert _redact_path_hint(str(localappdata)) == "LOCALAPPDATA"
+    assert _path_hint_relative_to(str(localappdata), localappdata, "LOCALAPPDATA") == "LOCALAPPDATA"
+
+    fake_home = tmp_path / "Home"
+    fake_home.mkdir(parents=True)
+    monkeypatch.setattr(Path, "home", lambda: fake_home)
+    assert _redact_path_hint(str(fake_home)) == "HOME"
+    assert _path_hint_relative_to(str(fake_home), fake_home, "HOME") == "HOME"
+
+    # Relative paths with ./ should not include '.' in the redacted tail
+    dot_relative = "./tools/universal_mail_cleaner"
+    hint = _redact_path_hint(dot_relative)
+    assert hint == ".../tools/universal_mail_cleaner"
+
+
+def test_read_app_version_supports_v_prefix_and_fallbacks(tmp_path, monkeypatch):
+    # Case 1: CHANGELOG with v-prefixed version
+    test_root = tmp_path / "app1"
+    test_root.mkdir()
+    (test_root / "CHANGELOG.md").write_text("## [v2.3.4] - 2026-06-01\n", encoding="utf-8")
+    monkeypatch.setattr("snapshot_export.APP_ROOT", test_root)
+    assert _read_app_version() == "2.3.4"
+
+    # Case 2: CHANGELOG absent, fallback to pyproject.toml
+    test_root2 = tmp_path / "app2"
+    test_root2.mkdir()
+    (test_root2 / "pyproject.toml").write_text(
+        '[project]\nname = "doc-bricks-mailprocessor"\nversion = "1.5.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("snapshot_export.APP_ROOT", test_root2)
+    assert _read_app_version() == "1.5.0"
+
+    # Case 3: Both absent, fallback to importlib.metadata
+    test_root3 = tmp_path / "app3"
+    test_root3.mkdir()
+    monkeypatch.setattr("snapshot_export.APP_ROOT", test_root3)
+    monkeypatch.setattr("importlib.metadata.version", lambda pkg: "9.9.9")
+    assert _read_app_version() == "9.9.9"
+
+
+def test_write_snapshot_bare_filename_in_working_dir(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    cfg = AppConfig(first_run=False)
+
+    written_path = write_snapshot("bare_snapshot.json", cfg)
+    assert written_path.is_file()
+    assert written_path.name == "bare_snapshot.json"

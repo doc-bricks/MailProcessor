@@ -404,7 +404,7 @@ class ToolManager:
             return ""
         try:
             text = changelog.read_text(encoding="utf-8", errors="ignore")
-            m = re.search(r"##\s*\[?(\d+\.\d+\.\d+)\]?", text)
+            m = re.search(r"##\s*\[?v?(\d+\.\d+\.\d+)\]?", text)
             return f"v{m.group(1)}" if m else ""
         except Exception:
             return ""

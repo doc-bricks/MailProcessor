@@ -122,6 +122,19 @@ def test_tool_version_from_changelog(tmp_path, tm):
     assert tm.tool_version("universal_mail_cleaner") == "v1.3.5"
 
 
+def test_tool_version_from_changelog_with_v_prefix(tmp_path, tm):
+    """tool_version parses versions formatted with 'v' prefix in CHANGELOG.md."""
+    folder = tmp_path / "MyTool"
+    folder.mkdir()
+    script = folder / "main.py"
+    script.write_text("", encoding="utf-8")
+    changelog = folder / "CHANGELOG.md"
+    changelog.write_text("## [v2.0.1] - 2026-06-01\n\n- feature y\n", encoding="utf-8")
+
+    tm.register("universal_mail_cleaner", str(folder), "main.py")
+    assert tm.tool_version("universal_mail_cleaner") == "v2.0.1"
+
+
 def test_tool_version_no_changelog(tmp_path, tm):
     """tool_version returns '' when CHANGELOG.md is missing."""
     folder = tmp_path / "MyTool"

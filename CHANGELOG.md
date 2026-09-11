@@ -7,6 +7,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- **Snapshot-Export, Pfad-Redigierung und Version-Discovery (snapshot_export.py & tool_manager.py) (2026-09-11)**:
+  - **Pfad-Redigierung ohne Trailing-Dot**: `_path_hint_relative_to()` lieferte bei Identität mit dem Basispfad (`LOCALAPPDATA` oder `HOME`) fälschlicherweise `"LOCALAPPDATA/."` bzw. `"HOME/."`, da `Path.relative_to()` den Wert `Path(".")` mit `.as_posix() == "."` zurückgibt und der Leer-String-Check nicht griff; korrigiert zu `if not relative_text or relative_text == ".": return label`. In `_redact_path_hint()` werden `.`-Bestandteile bei relativen Pfaden nun explizit gefiltert.
+  - **Robuste Version-Discovery**: `_read_app_version()` und `tool_version()` unterstützen nun auch Changelog-Versionsüberschriften mit optionalem `v`-Präfix (`## [vX.Y.Z]` oder `## vX.Y.Z`). Bei fehlendem oder ausgelassenem `CHANGELOG.md` fällt `_read_app_version()` automatisch auf `pyproject.toml` bzw. `importlib.metadata` zurück.
+  - **Sicheres Snapshot-Schreiben**: `write_snapshot()` prüft `destination.parent` vor `mkdir(parents=True, exist_ok=True)`, um unnötige oder fehlerhafte Aufrufe bei reinen Dateinamen im aktuellen Verzeichnis zu vermeiden.
+  - **Regressionstests**: Test-Suite um 4 neue Unittests für Redaktions-Dot-Handling, Version-Discovery-Fallbacks, relatives Snapshot-Schreiben und v-Präfix-Parsing erweitert (85 Tests bestanden, 100% grün).
+
 ### Marketing, Discoverability & Architecture
 
 - **Pfad B Marketing, Bilingual Navigation & Governance Invariants (2026-09-10)**:

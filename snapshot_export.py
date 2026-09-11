@@ -58,7 +58,8 @@ def write_snapshot(
     exported_at: datetime | None = None,
 ) -> Path:
     destination = Path(target_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.parent and str(destination.parent) not in ("", "."):
+        destination.parent.mkdir(parents=True, exist_ok=True)
     payload = build_snapshot_payload(cfg, exported_at=exported_at)
     destination.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
@@ -102,15 +103,33 @@ def _tool_status(tool_manager: ToolManager, tool_id: str) -> str:
 
 def _read_app_version() -> str:
     changelog_path = APP_ROOT / "CHANGELOG.md"
-    if not changelog_path.exists():
-        return ""
-    try:
-        text = changelog_path.read_text(encoding="utf-8", errors="ignore")
-    except Exception:
-        return ""
+    if changelog_path.is_file():
+        try:
+            text = changelog_path.read_text(encoding="utf-8", errors="ignore")
+            match = re.search(r"##\s*\[?v?(\d+\.\d+\.\d+)\]?", text)
+            if match:
+                return match.group(1)
+        except Exception:
+            pass
 
-    match = re.search(r"##\s*\[?(\d+\.\d+\.\d+)\]?", text)
-    return match.group(1) if match else ""
+    pyproject_path = APP_ROOT / "pyproject.toml"
+    if pyproject_path.is_file():
+        try:
+            text = pyproject_path.read_text(encoding="utf-8", errors="ignore")
+            match = re.search(r"""(?m)^\s*version\s*=\s*["']([^"']+)["']""", text)
+            if match:
+                return match.group(1).strip()
+        except Exception:
+            pass
+
+    try:
+        import importlib.metadata
+
+        return importlib.metadata.version("doc-bricks-mailprocessor")
+    except Exception:
+        pass
+
+    return ""
 
 
 def _platform_name() -> str:
@@ -142,7 +161,7 @@ def _redact_path_hint(path_value: str | None) -> str | None:
         return home_hint
 
     path = Path(path_value)
-    parts = [part for part in path.parts if part not in {path.anchor, "\\", "/"}]
+    parts = [part for part in path.parts if part not in {path.anchor, "\\", "/", "."}]
     if not parts:
         return None
     tail = parts[-2:] if len(parts) >= 2 else parts
@@ -156,6 +175,6 @@ def _path_hint_relative_to(path_value: str, base: Path, label: str) -> str | Non
         return None
 
     relative_text = relative.as_posix()
-    if not relative_text:
+    if not relative_text or relative_text == ".":
         return label
     return f"{label}/{relative_text}"
