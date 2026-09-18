@@ -507,3 +507,47 @@ def test_apply_scan_results_heals_invalid_path(tm, tmp_path):
     assert tm.cfg.tools["universal_mail_cleaner"].path == str(new_dir)
     assert tm.cfg.tools["universal_mail_cleaner"].installed_by == "scan"
 
+
+def test_register_and_validity_reject_directories(tm, tmp_path):
+    """register() and is_path_valid() must reject paths that point to directories instead of files."""
+    sub_dir = tmp_path / "somedir"
+    sub_dir.mkdir()
+
+    # Direct register with a directory as script_name
+    assert tm.register("universal_mail_cleaner", str(tmp_path), "somedir") is False
+
+    # If somehow configured with a directory, is_path_valid and launch must reject it
+    t = tm.cfg.get_tool("universal_mail_cleaner")
+    t.enabled = True
+    t.path = str(tmp_path)
+    t.main_script = "somedir"
+    assert tm.is_path_valid("universal_mail_cleaner") is False
+    assert tm.launch("universal_mail_cleaner").startswith("Script not found")
+
+
+def test_register_from_script_path_handles_directory_or_file(tm, tmp_path):
+    """register_from_script_path() discovers the main script if given a tool directory,
+    and also accepts direct file paths, while rejecting directories missing main scripts."""
+    # 1. Directory with script
+    tool_dir = tmp_path / "MyGrabber"
+    tool_dir.mkdir()
+    script = tool_dir / "UniversalDocsGrabberV1.py"
+    script.write_text("# script", encoding="utf-8")
+
+    assert tm.register_from_script_path("universal_docs_grabber", str(tool_dir)) is True
+    t = tm.cfg.get_tool("universal_docs_grabber")
+    assert t.path == str(tool_dir)
+    assert t.main_script == "UniversalDocsGrabberV1.py"
+    assert tm.is_path_valid("universal_docs_grabber") is True
+
+    # 2. Direct script file
+    assert tm.register_from_script_path("universal_docs_grabber", str(script)) is True
+    assert t.path == str(tool_dir)
+    assert t.main_script == "UniversalDocsGrabberV1.py"
+
+    # 3. Directory without tool script
+    empty_dir = tmp_path / "empty"
+    empty_dir.mkdir()
+    assert tm.register_from_script_path("universal_docs_grabber", str(empty_dir)) is False
+
+

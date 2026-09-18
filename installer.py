@@ -352,7 +352,13 @@ class PathsPage(QWizardPage):
             if not edit:
                 return False
             path = edit.text().strip()
-            if not path or not Path(path).exists():
+            if not path:
+                return False
+            p = Path(path)
+            if p.is_dir():
+                if not ToolManager.find_script_in_folder(str(p), tid):
+                    return False
+            elif not p.is_file():
                 return False
         return True
 
@@ -415,10 +421,17 @@ class InstallerWizard(QWizard):
 
         for tid, checked in selected.items():
             if not checked:
+                self._tm.unregister(tid)
                 continue
             found = scan.get(tid)
             if found:
-                self._tm.register(tid, found[0], found[1], "installer")
+                current_tool = self._cfg.tools.get(tid)
+                installed_by = (
+                    current_tool.installed_by
+                    if current_tool and current_tool.installed_by
+                    else "installer"
+                )
+                self._tm.register(tid, found[0], found[1], installed_by)
             elif tid in manual and manual[tid]:
                 self._tm.register_from_script_path(tid, manual[tid], "manual")
 

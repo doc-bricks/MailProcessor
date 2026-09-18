@@ -13,7 +13,7 @@ System tray launcher for the three Universal Mail Tools.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%20(System%20Tray)-0078D6.svg?logo=windows&logoColor=white)](https://github.com/doc-bricks/MailProcessor)
 [![GUI: PySide6 Qt](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52.svg?logo=qt&logoColor=white)](https://pypi.org/project/PySide6/)
-[![Tests: 79 passed](https://img.shields.io/badge/tests-79%20passed-brightgreen.svg)](tests/)
+[![Tests: 90 passed](https://img.shields.io/badge/tests-90%20passed-brightgreen.svg)](tests/)
 [![Security: Policy](https://img.shields.io/badge/security-SECURITY.md-blue.svg)](SECURITY.md)
 [![Security SLA: 48h Response](https://img.shields.io/badge/security%20SLA-48h%20response-blue.svg)](SECURITY.md)
 [![Privacy: 100% Local--First](https://img.shields.io/badge/privacy-100%25%20Local--First-blueviolet.svg)](SECURITY.md)

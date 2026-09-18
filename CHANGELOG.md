@@ -9,6 +9,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- **Installer-Synchronisation, Provenance-Erhalt & Skript-Validierung (installer.py & tool_manager.py) (2026-09-18)**:
+  - **Synchronisation abgewählter Tools**: In `InstallerWizard._on_finish()` werden abgewählte Tools nun explizit deregistriert (`self._tm.unregister(tid)`), anstatt sie unverändert aktiviert zu lassen, wenn sie zuvor (z. B. durch Download oder Vorbelegung) aktiviert wurden.
+  - **Provenance-Erhalt bei GitHub-Downloads**: Tools mit `installed_by="github"` behalten ihre Herkunfts-Metadaten bei Abschluss des Assistenten, anstatt pauschal mit `"installer"` überschrieben zu werden.
+  - **Validierung von Skript- und Ordnerpfaden**: `tool_manager.register()`, `is_path_valid()` und `launch()` prüfen nun strikt `is_file()`, um das Registrieren und Ausführen von Verzeichnissen als Python-Skripte zu unterbinden. `register_from_script_path()` und `PathsPage.isComplete()` unterstützen nun sowohl direkte Skriptdateien als auch Tool-Verzeichnisse über `find_script_in_folder()`.
+  - **Regressionstests**: Test-Suite um 5 neue Unittests in `test_installer.py` und `test_tool_manager.py` erweitert (90 Tests bestanden, 100% grün).
+
 - **Snapshot-Export, Pfad-Redigierung und Version-Discovery (snapshot_export.py & tool_manager.py) (2026-09-11)**:
   - **Pfad-Redigierung ohne Trailing-Dot**: `_path_hint_relative_to()` lieferte bei Identität mit dem Basispfad (`LOCALAPPDATA` oder `HOME`) fälschlicherweise `"LOCALAPPDATA/."` bzw. `"HOME/."`, da `Path.relative_to()` den Wert `Path(".")` mit `.as_posix() == "."` zurückgibt und der Leer-String-Check nicht griff; korrigiert zu `if not relative_text or relative_text == ".": return label`. In `_redact_path_hint()` werden `.`-Bestandteile bei relativen Pfaden nun explizit gefiltert.
   - **Robuste Version-Discovery**: `_read_app_version()` und `tool_version()` unterstützen nun auch Changelog-Versionsüberschriften mit optionalem `v`-Präfix (`## [vX.Y.Z]` oder `## vX.Y.Z`). Bei fehlendem oder ausgelassenem `CHANGELOG.md` fällt `_read_app_version()` automatisch auf `pyproject.toml` bzw. `importlib.metadata` zurück.

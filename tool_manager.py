@@ -175,9 +175,9 @@ class ToolManager:
 
     def register(self, tool_id: str, folder: str, script_name: str,
                  installed_by: str = "manual") -> bool:
-        """Register a tool by explicit path. Returns False if script not found."""
+        """Register a tool by explicit path. Returns False if script not found or is not a file."""
         script_path = Path(folder) / script_name
-        if not script_path.exists():
+        if not script_path.is_file():
             return False
         t = self.cfg.get_tool(tool_id)
         t.enabled = True
@@ -188,8 +188,16 @@ class ToolManager:
 
     def register_from_script_path(self, tool_id: str, script_path: str,
                                   installed_by: str = "manual") -> bool:
+        """Register a tool by giving the path to its main script or containing folder."""
         p = Path(script_path)
         if not p.exists():
+            return False
+        if p.is_dir():
+            script_name = self.find_script_in_folder(str(p), tool_id)
+            if not script_name:
+                return False
+            return self.register(tool_id, str(p), script_name, installed_by)
+        if not p.is_file():
             return False
         return self.register(tool_id, str(p.parent), p.name, installed_by)
 
@@ -208,7 +216,7 @@ class ToolManager:
         if not t or not t.enabled or not t.path or not t.main_script:
             return "Tool not configured"
         script = Path(t.path) / t.main_script
-        if not script.exists():
+        if not script.is_file():
             return f"Script not found: {script}"
         interpreter = _python_interpreter()
         if not interpreter:
@@ -248,7 +256,7 @@ class ToolManager:
         t = self.cfg.tools.get(tool_id)
         if not t or not t.path or not t.main_script:
             return False
-        return (Path(t.path) / t.main_script).exists()
+        return (Path(t.path) / t.main_script).is_file()
 
     @staticmethod
     def find_script_in_folder(folder: str, tool_id: str) -> Optional[str]:

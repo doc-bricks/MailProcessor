@@ -288,3 +288,95 @@ def test_welcome_and_tools_page_expose_accessible_context(qapp, tm):
         assert "https://github.com/" in btn.accessibleDescription()
         assert btn.toolTip().startswith("Von GitHub laden: ")
 
+
+def test_installer_finish_disables_unchecked_tool(qapp, tmp_path):
+    """Regression: When a tool was enabled (e.g. via download), but unchecked on ToolsPage,
+    _on_finish must unregister/disable it instead of leaving it enabled."""
+    from config import AppConfig
+    from installer import InstallerWizard
+
+    cfg = AppConfig()
+    cfg.config_file = tmp_path / "config.json"
+    t = cfg.get_tool("universal_mail_cleaner")
+    t.enabled = True
+    t.path = str(tmp_path)
+    t.main_script = "main.py"
+    t.installed_by = "github"
+
+    wiz = InstallerWizard(cfg)
+    wiz._tools.initializePage()
+    # Explicitly uncheck universal_mail_cleaner
+    wiz._tools._checkboxes["universal_mail_cleaner"].setChecked(False)
+
+    wiz._on_finish()
+
+    saved_tool = wiz._cfg.get_tool("universal_mail_cleaner")
+    assert saved_tool.enabled is False, "Unchecked tool must not remain enabled"
+
+
+def test_installer_finish_preserves_github_provenance(qapp, tmp_path):
+    """Regression: Tools downloaded from GitHub must preserve installed_by='github'
+    instead of having it overwritten with 'installer' on finish."""
+    from config import AppConfig
+    from installer import InstallerWizard
+
+    cfg = AppConfig()
+    cfg.config_file = tmp_path / "config.json"
+    t = cfg.get_tool("universal_mail_cleaner")
+    t.enabled = True
+    t.path = str(tmp_path)
+    t.main_script = "mail_imap_cleaner_v1.py"
+    t.installed_by = "github"
+
+    script = tmp_path / "mail_imap_cleaner_v1.py"
+    script.write_text("# script", encoding="utf-8")
+
+    wiz = InstallerWizard(cfg)
+    wiz._tools._scan_results["universal_mail_cleaner"] = (str(tmp_path), "mail_imap_cleaner_v1.py")
+    wiz._tools.initializePage()
+    wiz._tools._checkboxes["universal_mail_cleaner"].setChecked(True)
+
+    wiz._on_finish()
+
+    saved_tool = wiz._cfg.get_tool("universal_mail_cleaner")
+    assert saved_tool.enabled is True
+    assert saved_tool.installed_by == "github", (
+        f"Expected installed_by='github', got '{saved_tool.installed_by}'"
+    )
+
+
+def test_paths_page_supports_directory_and_file_paths(qapp, tm, tmp_path):
+    """PathsPage accepts valid script files or directories containing the tool's script,
+    and rejects directories missing the tool's script."""
+    set_language("de")
+    tools_page = ToolsPage(tm)
+    tools_page.initializePage()
+    tools_page._checkboxes["universal_docs_grabber"].setChecked(True)
+
+    page = PathsPage(tools_page, tm)
+    page.initializePage()
+    edit = page._path_edits["universal_docs_grabber"]
+
+    # Non-existent path
+    edit.setText(str(tmp_path / "nonexistent"))
+    assert page.isComplete() is False
+
+    # Directory without script
+    empty_dir = tmp_path / "empty_dir"
+    empty_dir.mkdir()
+    edit.setText(str(empty_dir))
+    assert page.isComplete() is False
+
+    # Directory with script
+    valid_dir = tmp_path / "valid_tool_dir"
+    valid_dir.mkdir()
+    (valid_dir / "UniversalDocsGrabberV1.py").write_text("# script", encoding="utf-8")
+    edit.setText(str(valid_dir))
+    assert page.isComplete() is True
+
+    # Script file directly
+    script_file = valid_dir / "UniversalDocsGrabberV1.py"
+    edit.setText(str(script_file))
+    assert page.isComplete() is True
+
+
