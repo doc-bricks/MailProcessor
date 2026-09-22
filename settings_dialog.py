@@ -120,6 +120,8 @@ class SettingsDialog(QDialog):
         self._tm = ToolManager(app_cfg)
 
         self.setWindowTitle(tr("settings_title"))
+        from tray import get_app_icon
+        self.setWindowIcon(get_app_icon())
         self.resize(680, 460)
         self._build_ui()
 

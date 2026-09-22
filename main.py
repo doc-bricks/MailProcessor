@@ -19,6 +19,9 @@ def main():
     app.setApplicationName("MailProcessor")
     app.setOrganizationName("lukisch")
 
+    from tray import get_app_icon
+    app.setWindowIcon(get_app_icon())
+
     cfg = cfg_module.load()
     set_language(cfg.language)
 

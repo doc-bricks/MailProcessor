@@ -51,11 +51,31 @@ def _resource_path(relative_path: str) -> Path:
     return base / relative_path
 
 
+def get_app_icon() -> QIcon:
+    """Return the application QIcon from candidate icon paths or fallback."""
+    candidates = [
+        "resources/icon.ico",
+        "MailProcessor.ico",
+        "icon.ico",
+        "DesktopIcon.ico",
+        "assets/icon.ico",
+        "MailProcessor.png",
+        "icon.png",
+    ]
+    for rel in candidates:
+        p = _resource_path(rel)
+        if p.is_file():
+            icon = QIcon(str(p))
+            if not icon.isNull():
+                return icon
+    return _make_tray_icon()
+
+
 def _load_tray_icon() -> QIcon:
     icon_path = _resource_path("resources/icon.ico")
     icon = QIcon(str(icon_path))
     if icon.isNull():
-        return _make_tray_icon()
+        return get_app_icon()
     return icon
 
 

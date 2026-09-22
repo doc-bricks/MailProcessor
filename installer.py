@@ -395,6 +395,8 @@ class InstallerWizard(QWizard):
         self._tm = ToolManager(app_cfg)
 
         self.setWindowTitle(tr("wizard_title"))
+        from tray import get_app_icon
+        self.setWindowIcon(get_app_icon())
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.resize(580, 460)
 

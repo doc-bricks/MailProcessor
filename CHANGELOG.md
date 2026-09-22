@@ -7,6 +7,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- **Multi-Resolution App-Icon Suite, PWA/Store-Assets & Runtime-Window-Icon-Integration (2026-09-22)**:
+  - **1024x1024 Master-PNGs**: Hochauflösendes Master-Icon (`MailProcessor.png`, `DesktopIcon.png`, `icon.png`) mit originalgetreuer Roboter-Briefumschlag-Markenidentität und Schärfung generiert.
+  - **7-Layer Windows-ICOs**: Standardisierte Multi-Resolution-ICOs (16, 24, 32, 48, 64, 128, 256 px @ 32 bpp RGBA) für Desktop-Shortcuts, Taskleiste und Windows Explorer in Root, `resources/icon.ico` und `assets/` bereitgestellt; SHA-256-Synchronität zwischen Build- und Runtime-Icon gesichert.
+  - **Favicon-Suite**: 4-Layer-Favicon (`favicon.ico` mit 16, 24, 32, 48 px) sowie PNG-Favicons (16x16, 32x32) in Root, `assets/` und `mobile_icons/` integriert.
+  - **Mobile & PWA-Suite**: W3C `manifest.json`, Standard- und maskierbare Icons (192x192, 512x512) mit Schutzzone sowie Apple-Touch-Icons (180x180) in `mobile_icons/` und `assets/` angelegt.
+  - **Microsoft Store & Windows App Tiles**: Vollständiges Kachel-Set (`icon_44x44.png`, `icon_50x50.png`, `icon_150x150.png`, `icon_310x310.png`, `icon_310x150.png` / `Wide310x150Logo.png`) und Dokumentation in `store_assets/` bereitgestellt.
+  - **Laufzeit-Einbindung**: `get_app_icon()` in `tray.py` bereitgestellt und in `main.py`, `settings_dialog.py` (`SettingsDialog`) und `installer.py` (`InstallerWizard`) via `setWindowIcon()` angebunden.
+  - **Vertragstests**: `tests/test_assets_and_icons.py` mit 6 umfassenden Tests zur Validierung aller Layer, Dimensionen, Paritäten, PWA-Struktur und Laufzeit-Icon-Funktion implementiert (96 Tests bestanden, 100% grün).
+
 ### Fixed
 
 - **Installer-Synchronisation, Provenance-Erhalt & Skript-Validierung (installer.py & tool_manager.py) (2026-09-18)**:
