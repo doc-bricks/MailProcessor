@@ -48,6 +48,100 @@ def test_save_load_roundtrip():
     assert t.installed_by == "scan"
 
 
+def test_save_temp_write_failure_preserves_previous_config(monkeypatch):
+    config_file = cfg_module.CONFIG_FILE
+    previous = AppConfig(language="en", first_run=False, start_with_windows=True)
+    previous.tools["synthetic"] = ToolConfig(
+        enabled=True,
+        path="/synthetic/tool",
+        main_script="main.py",
+        installed_by="manual",
+    )
+    cfg_module.save(previous)
+    previous_bytes = config_file.read_bytes()
+
+    replacement = AppConfig(language="de", first_run=True)
+    real_named_temp_file = cfg_module.tempfile.NamedTemporaryFile
+    temporary_paths = []
+
+    class PartialWriter:
+        def __init__(self, wrapped):
+            self._wrapped = wrapped
+            self.name = wrapped.name
+
+        def __enter__(self):
+            self._wrapped.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self._wrapped.__exit__(*args)
+
+        def write(self, value):
+            self._wrapped.write(value[:16])
+            self._wrapped.flush()
+            raise OSError("synthetic interrupted temp write")
+
+    def fail_during_temp_write(*args, **kwargs):
+        wrapped = real_named_temp_file(*args, **kwargs)
+        temporary_paths.append(Path(wrapped.name))
+        return PartialWriter(wrapped)
+
+    monkeypatch.setattr(cfg_module.tempfile, "NamedTemporaryFile", fail_during_temp_write)
+
+    with pytest.raises(OSError, match="synthetic interrupted temp write"):
+        cfg_module.save(replacement)
+
+    assert config_file.read_bytes() == previous_bytes
+    loaded = cfg_module.load()
+    assert loaded.language == "en"
+    assert loaded.first_run is False
+    assert loaded.start_with_windows is True
+    assert loaded.tools["synthetic"].main_script == "main.py"
+    assert len(temporary_paths) == 1
+    assert not temporary_paths[0].exists()
+
+
+def test_save_replace_failure_preserves_original_error_and_config(monkeypatch):
+    config_file = cfg_module.CONFIG_FILE
+    previous = AppConfig(language="en", first_run=False, start_with_windows=True)
+    previous.tools["synthetic"] = ToolConfig(
+        enabled=True,
+        path="/synthetic/tool",
+        main_script="main.py",
+        installed_by="manual",
+    )
+    cfg_module.save(previous)
+    previous_bytes = config_file.read_bytes()
+
+    class FailingOS:
+        @staticmethod
+        def replace(source, destination):
+            raise OSError("synthetic atomic replace failure")
+
+    real_unlink = Path.unlink
+
+    def fail_temp_cleanup(path, *args, **kwargs):
+        if path.parent == config_file.parent and path.name.startswith(".mp-"):
+            raise OSError("synthetic temp cleanup failure")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(cfg_module, "os", FailingOS)
+    monkeypatch.setattr(Path, "unlink", fail_temp_cleanup)
+
+    with pytest.raises(OSError, match="synthetic atomic replace failure"):
+        cfg_module.save(AppConfig(language="de", first_run=True))
+
+    assert config_file.read_bytes() == previous_bytes
+    loaded = cfg_module.load()
+    assert loaded.language == "en"
+    assert loaded.first_run is False
+    assert loaded.start_with_windows is True
+    assert loaded.tools["synthetic"].main_script == "main.py"
+    # The injected cleanup failure may leave only this test's unique temp file.
+    leftovers = list(config_file.parent.glob(".mp-*.tmp"))
+    assert len(leftovers) == 1
+
+
 def test_load_corrupt_file(tmp_path):
     config_dir = Path(str(cfg_module.CONFIG_DIR))
     config_dir.mkdir(parents=True, exist_ok=True)

@@ -13,7 +13,7 @@ Vielen Dank für Ihr Interesse, zu diesem Projekt beizutragen.
 ### Lokales Setup
 
 1. Python 3.10+ installieren
-2. `pip install -r requirements.txt`
+2. `pip install -r requirements-dev.txt`
 3. App mit `start.bat` oder `python main.py` starten
 4. Tests mit `python -m pytest -q` ausführen
 
@@ -47,7 +47,7 @@ Thank you for your interest in contributing to this project.
 ### Local Setup
 
 1. Install Python 3.10+
-2. Run `pip install -r requirements.txt`
+2. Run `pip install -r requirements-dev.txt`
 3. Start the app with `start.bat` or `python main.py`
 4. Run tests with `python -m pytest -q`
 
