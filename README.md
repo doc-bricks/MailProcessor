@@ -16,7 +16,7 @@ System tray launcher for the three Universal Mail Tools.
 [![Tests: 90 passed](https://img.shields.io/badge/tests-90%20passed-brightgreen.svg)](tests/)
 [![Security: Policy](https://img.shields.io/badge/security-SECURITY.md-blue.svg)](SECURITY.md)
 [![Security SLA: 48h Response](https://img.shields.io/badge/security%20SLA-48h%20response-blue.svg)](SECURITY.md)
-[![Privacy: 100% Local--First](https://img.shields.io/badge/privacy-100%25%20Local--First-blueviolet.svg)](SECURITY.md)
+[![Privacy notice: draft](https://img.shields.io/badge/privacy-notice%20draft-blue.svg)](docs/PRIVACY_POLICY_DRAFT.md)
 [![Code Style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Umbrella: open-bricks](https://img.shields.io/badge/umbrella-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
@@ -65,6 +65,10 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 - Read-only snapshot export as `mailprocessor-suite-v1.json` for local reference; no web or mobile companion is active
 - Windows autostart (registry entry)
 - Bilingual: German / English
+
+### Data and network scope
+
+MailProcessor stores its launcher configuration on the device. When a user starts a tool download in the setup wizard, the launcher requests release metadata from GitHub and downloads that tool's release archive. No telemetry implementation was found in the reviewed launcher source. The separately launched mail tools have their own data flows; this finding does not describe or limit their network behavior. See the [launcher privacy notice draft](docs/PRIVACY_POLICY_DRAFT.md).
 
 ## System Architecture & Workflow
 
@@ -185,16 +189,16 @@ tracked in [RELEASES.md](RELEASES.md#current-platform-scope-2026-08-26).
 
 ## Governance & Runtime Invariants
 
-The following invariants define the operational and security guarantees of MailProcessor:
+The following identifiers summarize observed product behavior and security boundaries:
 
-| Invariant ID | Name | Standard / Policy | Verification & Guarantee |
+| Invariant ID | Name | Standard / Policy | Observed behavior |
 |---|---|---|---|
-| `INV-LOCAL-01` | **100% Local-First & Zero Egress** | Offline Privacy Standard | Operates entirely on the local machine. No telemetry, no background analytics, no cloud relay, and zero storage of email content, passwords, or credentials. |
+| `INV-DATA-01` | **Launcher data and network scope** | Observed source behavior | Launcher configuration is stored locally. User-started tool downloads contact GitHub Releases; separately launched tools have their own data flows. No telemetry implementation was found in the reviewed launcher source. |
 | `INV-NOELEV-02` | **Non-Elevation & RunAsInvoker** | Windows Least Privilege | Runs exclusively as standard unprivileged user. Never requests UAC elevation (`runAsInvoker`). |
 | `INV-ZIPSLIP-03` | **Zip-Slip Traversal Defense** | CWE-22 Security Standard | Tool downloads from GitHub releases validate archive member paths to prevent directory traversal attacks before extraction. |
 | `INV-CFGISO-04` | **Local AppData Isolation** | Windows AppData Convention | Configuration is isolated under `%LOCALAPPDATA%\MailProcessor\config.json`. No registry pollution except optional per-user autostart entry. |
 | `INV-PROCLIF-05` | **Safe Subprocess Lifecycle** | Clean Process Separation | Launches Universal Mail Tools via detached unprivileged subprocesses (`subprocess.Popen`) preventing parent tray lockups or cascaded crashes. |
-| `INV-REDACT-06` | **Deterministic Snapshot Redaction** | Data Minimization | `mailprocessor-suite-v1.json` exports redact machine-specific absolute paths to protect user privacy in shared or offline bug reports. |
+| `INV-REDACT-06` | **Snapshot path hints** | Data handling | The export replaces local data-root paths; other paths may retain the last one or two folder names. Review the file before sharing. |
 | `INV-OSPAR-07` | **Cross-Platform Source Smoke Contract** | Multi-OS Integrity | Primary product surface is Windows Desktop Tray; multi-platform smoke test matrix verifies source-level compatibility across Ubuntu and macOS. |
 | `INV-SLA-08` | **Security Response & Triage SLA** | Responsible Disclosure | 48-hour response SLA and 5-business-day triage commitment through `security@ellmos.ai` and GitHub Security Advisories. |
 

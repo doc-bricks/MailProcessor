@@ -10,7 +10,7 @@ Primary language: Python
 UI stack: PySide6 desktop tray application
 License: MIT
 
-MailProcessor is the local-first Windows tray hub for the doc-bricks Universal Mail Tools:
+MailProcessor is a Windows tray hub for the doc-bricks Universal Mail Tools. It stores launcher settings locally and can download selected tool releases from GitHub when the user starts a download:
 
 - Universal Mail Cleaner: https://github.com/doc-bricks/UniversalMailCleaner
 - Universal Docs Grabber: https://github.com/doc-bricks/UniversalDocsGrabber
@@ -38,7 +38,7 @@ Visual architecture & diagrams:
 
 Governance & runtime invariants:
 
-- INV-LOCAL-01: 100% Local-First & Zero Egress
+- INV-DATA-01: Local launcher settings; user-started GitHub release downloads; separate child-tool data flows
 - INV-NOELEV-02: Non-Elevation & RunAsInvoker
 - INV-ZIPSLIP-03: CWE-22 Zip-Slip Traversal Defense
 - INV-CFGISO-04: Local AppData Isolation (%LOCALAPPDATA%\MailProcessor\config.json)
@@ -47,11 +47,12 @@ Governance & runtime invariants:
 - INV-OSPAR-07: Cross-Platform Source Smoke Contract (Ubuntu, macOS smoke)
 - INV-SLA-08: Security Response & Triage SLA (48h acknowledgment, 5-day triage)
 
-Privacy boundary:
+Launcher data and network scope:
 
-- MailProcessor does not store mail contents, passwords, tokens, or IMAP credentials.
-- Snapshot exports redact local paths and contain only launcher metadata.
-- MailProcessor operates 100% local-first on the user's desktop with no remote cloud dependencies.
+- Launcher configuration is UTF-8 JSON under `%LOCALAPPDATA%\MailProcessor\config.json`, with a home-directory fallback; the reviewed source does not encrypt it.
+- User-started tool downloads request GitHub release metadata and download archive files.
+- Snapshot exports replace local data-root paths, but other paths may retain trailing folder names; review before sharing.
+- No telemetry implementation was found in the reviewed launcher source. Separately launched tools have their own data flows.
 
 Local verification:
 
@@ -71,7 +72,7 @@ python -m compileall .
 ```text
 MailProcessor Windows tray mail launcher
 doc-bricks MailProcessor PySide6
-local-first IMAP mail tools launcher
+Windows mail tools launcher with optional GitHub downloads
 Universal Mail Cleaner Docs Grabber Invoice Mail hub
 Windows mail tool manager Python desktop
 ```
