@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import urllib.request
@@ -302,6 +303,22 @@ class ToolManager:
             return "No GitHub repo configured for this tool"
         repo = meta["github_repo"]
 
+        # Validate the local destination before making any network request.
+        dest_dir = _DOWNLOAD_DIR / tool_id
+        for candidate in (dest_dir, *dest_dir.parents):
+            try:
+                destination_stat = candidate.stat()
+            except FileNotFoundError:
+                continue
+            except OSError as exc:
+                return f"Download error: cannot prepare destination: {exc}"
+            if not stat.S_ISDIR(destination_stat.st_mode):
+                return (
+                    "Download error: cannot prepare destination: "
+                    f"not a directory: {candidate}"
+                )
+            break
+
         # Fetch release metadata
         api_url = f"https://api.github.com/repos/{repo}/releases/latest"
         try:
@@ -320,7 +337,6 @@ class ToolManager:
             return "No zipball_url in release info"
 
         # Prepare download directory
-        dest_dir = _DOWNLOAD_DIR / tool_id
         try:
             dest_dir.mkdir(parents=True, exist_ok=True)
         except OSError as exc:
