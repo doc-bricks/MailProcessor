@@ -1,0 +1,5 @@
+-r requirements.txt
+Pillow>=11
+pytest
+ruff
+tomli>=2; python_version < "3.11"

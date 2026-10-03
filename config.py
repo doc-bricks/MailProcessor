@@ -2,6 +2,7 @@
 
 import json
 import os
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -87,4 +88,25 @@ def save(cfg: AppConfig) -> None:
             for tid, t in cfg.tools.items()
         },
     }
-    CONFIG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    serialized = json.dumps(data, indent=2, ensure_ascii=False)
+    temporary_path: Optional[Path] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=CONFIG_DIR,
+            prefix=".mp-",
+            suffix=".tmp",
+            delete=False,
+        ) as temp_file:
+            temporary_path = Path(temp_file.name)
+            temp_file.write(serialized)
+        os.replace(temporary_path, CONFIG_FILE)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink()
+            except OSError:
+                # Cleanup is best-effort so the write or replace error is preserved.
+                pass
