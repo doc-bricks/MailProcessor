@@ -16,7 +16,7 @@ System-Tray-Launcher für die drei Universal Mail Tools.
 [![Tests: 90 bestanden](https://img.shields.io/badge/tests-90%20bestanden-brightgreen.svg)](tests/)
 [![Sicherheit: Richtlinie](https://img.shields.io/badge/sicherheit-SECURITY.md-blue.svg)](SECURITY.md)
 [![Sicherheits-SLA: 48h Reaktion](https://img.shields.io/badge/sicherheits--SLA-48h%20Reaktion-blue.svg)](SECURITY.md)
-[![Datenschutz: 100% Local--First](https://img.shields.io/badge/datenschutz-100%25%20Local--First-blueviolet.svg)](SECURITY.md)
+[![Datenschutzhinweis: Entwurf](https://img.shields.io/badge/datenschutz-hinweis%20entwurf-blue.svg)](docs/PRIVACY_POLICY_DRAFT.md)
 [![Code-Stil: ruff](https://img.shields.io/badge/code--stil-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Dachverband: open-bricks](https://img.shields.io/badge/dachverband-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
@@ -65,6 +65,10 @@ MailProcessor sitzt im Windows-System-Tray und gibt per Rechtsklick Zugang zu:
 - Read-only-Snapshot als `mailprocessor-suite-v1.json` für eine lokale Referenz exportieren; kein Web- oder Mobile-Companion ist aktiv
 - Autostart mit Windows (Registry-Eintrag)
 - Zweisprachig: Deutsch / Englisch
+
+### Daten- und Netzwerkumfang
+
+MailProcessor speichert seine Launcher-Konfiguration auf dem Gerät. Startet der Benutzer im Einrichtungsassistenten einen Werkzeug-Download, fragt der Launcher Release-Metadaten bei GitHub ab und lädt das Release-Archiv des Werkzeugs herunter. Im geprüften Launcher-Quellstand wurde keine Telemetrie-Implementierung gefunden. Die separat gestarteten Mailwerkzeuge haben eigene Datenflüsse; dieser Befund beschreibt oder begrenzt deren Netzwerkverhalten nicht. Siehe den [Prüfentwurf der Datenschutzhinweise](docs/PRIVACY_POLICY_DRAFT.md).
 
 ## Systemarchitektur & Workflow
 
@@ -188,16 +192,16 @@ werden in [RELEASES.md](RELEASES.md#current-platform-scope-2026-08-26) nachverfo
 
 ## Governance & Laufzeit-Invarianten
 
-Die folgenden Invarianten definieren die Betriebs- und Sicherheitsgarantien von MailProcessor:
+Die folgenden Kennungen fassen beobachtetes Produktverhalten und Sicherheitsgrenzen zusammen:
 
-| Invarianten-ID | Bezeichnung | Richtlinie / Standard | Verifikation & Garantie |
+| Invarianten-ID | Bezeichnung | Richtlinie / Standard | Beobachtetes Verhalten |
 |---|---|---|---|
-| `INV-LOCAL-01` | **100% Local-First & Zero Egress** | Offline-Datenschutzstandard | Läuft vollständig auf dem lokalen System. Keine Telemetrie, keine Cloud-Weiterleitung, keine Speicherung von Mail-Inhalten, Passwörtern oder Zugangsdaten. |
+| `INV-DATA-01` | **Daten- und Netzwerkumfang des Launchers** | Beobachtetes Quellverhalten | Launcher-Einstellungen werden lokal gespeichert. Vom Benutzer gestartete Werkzeug-Downloads kontaktieren GitHub Releases; separat gestartete Werkzeuge haben eigene Datenflüsse. Im geprüften Launcher-Quellstand wurde keine Telemetrie-Implementierung gefunden. |
 | `INV-NOELEV-02` | **Keine Rechteerweiterung (RunAsInvoker)** | Windows Least-Privilege-Prinzip | Läuft ausnahmslos als Standardbenutzer ohne UAC-Elevation (`runAsInvoker`). |
 | `INV-ZIPSLIP-03` | **Zip-Slip-Schutz gegen Pfadüberquerung** | CWE-22 Sicherheitsstandard | GitHub-Release-Downloads validieren alle Archivpfade vor dem Entpacken, um Verzeichnisüberquerungen auszuschließen. |
 | `INV-CFGISO-04` | **Lokale AppData-Isolation** | Windows AppData Konvention | Konfiguration liegt isoliert unter `%LOCALAPPDATA%\MailProcessor\config.json`. Keine Registry-Verschmutzung außer dem optionalen Benutzer-Autostart. |
 | `INV-PROCLIF-05` | **Sicherer Subprozess-Lebenszyklus** | Saubere Prozess-Entkopplung | Startet Universal Mail Tools als losgelöste unprivilegierte Subprozesse (`subprocess.Popen`), wodurch Blockaden des Trays verhindert werden. |
-| `INV-REDACT-06` | **Deterministische Snapshot-Anonymisierung** | Datenminimierung | Der `mailprocessor-suite-v1.json`-Export bereinigt benutzerspezifische absolute Pfade für den sicheren Offline-Austausch. |
+| `INV-REDACT-06` | **Pfadhinweise im Snapshot** | Datenverarbeitung | Der Export ersetzt Pfade unter lokalen Datenwurzeln; andere Pfade können die letzten ein oder zwei Ordnernamen enthalten. Prüfe die Datei vor dem Teilen. |
 | `INV-OSPAR-07` | **Plattform-Smoke-Vertrag** | Multi-OS Quelltext-Integrität | Primäre Ziellaufzeit ist Windows Desktop Tray; Multi-OS-Matrix prüft Quelltext-Kompatibilität unter Ubuntu und macOS. |
 | `INV-SLA-08` | **Sicherheitsreaktions- & Triage-SLA** | Responsible Disclosure | 48-Stunden-Reaktions-SLA und 5-Werktage-Triage über `security@ellmos.ai` und GitHub Security Advisories. |
 

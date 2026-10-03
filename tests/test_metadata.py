@@ -113,12 +113,35 @@ def test_security_policy_and_invariants():
     assert "https://github.com/doc-bricks/MailProcessor/security/advisories/new" in security_content
     assert "48" in security_content
 
-    # Core invariants
-    assert "Local-First" in security_content
-    assert "Zero-Egress" in security_content
+    # The launcher performs user-started GitHub downloads; do not promise zero egress.
+    assert "Launcher data and network scope" in security_content
+    assert "user starts a tool download" in security_content
+    assert "separately launched tools" in security_content.casefold()
+    assert "Zero-Egress" not in security_content
     assert "Non-Elevation" in security_content
     assert "Zip-Slip" in security_content
     assert "%LOCALAPPDATA%\\MailProcessor\\config.json" in security_content
+
+
+def test_public_docs_describe_launcher_network_scope_without_zero_egress_claim():
+    docs = {
+        "README.md": _read_file("README.md"),
+        "README-DE.md": _read_file("README-DE.md"),
+        "SECURITY.md": _read_file("SECURITY.md"),
+        "llms.txt": _read_file("llms.txt"),
+    }
+
+    for name, content in docs.items():
+        normalized = content.casefold()
+        assert "zero-egress" not in normalized, name
+        assert "zero egress" not in normalized, name
+        assert "100% local-first" not in normalized, name
+
+    assert "user-started tool downloads" in docs["README.md"].casefold()
+    assert "vom benutzer gestartete werkzeug-downloads" in docs["README-DE.md"].casefold()
+    assert "separately launched tools" in docs["SECURITY.md"].casefold()
+    assert "separat gestartete werkzeuge" in docs["README-DE.md"].casefold()
+    assert "no telemetry implementation was found" in docs["llms.txt"].casefold()
 
 
 def test_gitignore_integrity():
@@ -173,7 +196,7 @@ def test_readme_bilingual_parity():
 
     # Governance invariants in both
     expected_invariants = [
-        "INV-LOCAL-01",
+            "INV-DATA-01",
         "INV-NOELEV-02",
         "INV-ZIPSLIP-03",
         "INV-CFGISO-04",
@@ -205,7 +228,7 @@ def test_llms_txt_integrity():
     assert "UniversalInvoiceMail" in llms_content
     assert "source-platform smoke PASS" in llms_content
     assert "%LOCALAPPDATA%\\MailProcessor\\config.json" in llms_content
-    assert "INV-LOCAL-01" in llms_content
+    assert "INV-DATA-01" in llms_content
     assert "INV-SLA-08" in llms_content
     assert "flowchart TD" in llms_content
     assert "sequenceDiagram" in llms_content

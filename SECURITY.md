@@ -24,10 +24,13 @@ melden Sie diese bitte verantwortungsvoll:
    - `support@lukasgeiger.com`
    - `lukas@open-bricks.org`
 
-### Verbindliche Sicherheitsgarantien (Invarianten)
+### Laufzeitverhalten und Datenumfang
 
-- **Local-First & Zero-Egress:** MailProcessor speichert keine E-Mail-Inhalte, Passwörter,
-  Tokens oder IMAP-Zugangsdaten. Alle Operationen laufen lokal auf dem Rechner des Nutzers.
+- **Daten- und Netzwerkumfang des Launchers:** MailProcessor speichert seine Launcher-Konfiguration
+  lokal. Wenn Benutzer im Einrichtungsassistenten einen Werkzeug-Download starten, fragt der Launcher
+  GitHub-Release-Metadaten ab und lädt das Archiv herunter. Im geprüften Launcher-Quellstand wurde
+  keine Telemetrie-Implementierung gefunden. Separat gestartete Werkzeuge haben eigene Datenflüsse;
+  dieser Befund beschreibt oder begrenzt deren Netzwerkverhalten nicht.
 - **Unprivilegierter User-Mode (Non-Elevation):** MailProcessor benötigt und verlangt keine
   Administratorrechte. Autostart wird ausschließlich im aktuellen Benutzerkontext
   (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`) verwaltet.
@@ -35,8 +38,8 @@ melden Sie diese bitte verantwortungsvoll:
   Entpacken strikt auf Pfadtraversierung (CWE-22) validiert, sodass keine Dateien außerhalb
   des vorgesehenen Tool-Ordners abgelegt werden können.
 - **Isolierte Konfiguration:** Konfigurationsdaten werden im lokalen Benutzerdatenverzeichnis
-  (`%LOCALAPPDATA%\MailProcessor\config.json`) gehalten. Snapshot-Exporte redigieren lokale
-  Pfade und enthalten keinerlei geheime Informationen.
+  (`%LOCALAPPDATA%\MailProcessor\config.json`) gehalten. Snapshot-Exporte ersetzen lokale
+  Pfadwurzeln; andere Pfade können die letzten Ordnernamen enthalten. Vor dem Teilen prüfen.
 
 ### Reaktionszeit
 
@@ -68,10 +71,13 @@ If you discover a security vulnerability or concern in MailProcessor, please rep
    - `support@lukasgeiger.com`
    - `lukas@open-bricks.org`
 
-### Core Security Invariants
+### Runtime Behavior and Data Scope
 
-- **Local-First & Zero-Egress:** MailProcessor does not store email contents, passwords,
-  tokens, or IMAP credentials. It operates 100% locally with zero cloud telemetry.
+- **Launcher data and network scope:** MailProcessor stores its launcher configuration locally.
+  When a user starts a tool download in the setup wizard, the launcher requests GitHub release
+  metadata and downloads the archive. No telemetry implementation was found in the reviewed
+  launcher source. Separately launched tools have their own data flows; this finding does not
+  describe or limit their network behavior.
 - **Non-Elevation (User Mode):** MailProcessor runs unprivileged in standard user mode.
   Autostart entries are registered exclusively under the user scope
   (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`).
@@ -79,8 +85,8 @@ If you discover a security vulnerability or concern in MailProcessor, please rep
   against path traversal (CWE-22) before extraction, preventing any file writes outside the
   designated tool target directory.
 - **Isolated Configuration:** Configuration data is stored in the local user directory
-  (`%LOCALAPPDATA%\MailProcessor\config.json`). Snapshot exports redact local paths and
-  contain zero secrets.
+  (`%LOCALAPPDATA%\MailProcessor\config.json`). Snapshot exports replace local data-root paths;
+  other paths may retain trailing folder names. Review an export before sharing it.
 
 ### Response Time
 
