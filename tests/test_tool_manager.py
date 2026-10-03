@@ -333,13 +333,58 @@ def test_download_tool_returns_error_when_destination_is_a_file(tm, tmp_path, mo
 
     download_root = tmp_path / "downloads"
     download_root.mkdir()
-    (download_root / "universal_mail_cleaner").write_text("blocked", encoding="utf-8")
+    sentinel = download_root / "universal_mail_cleaner"
+    sentinel.write_text("blocked", encoding="utf-8")
     monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
 
+    network_calls = []
+
+    def fail_fast_urlopen(*args, **kwargs):
+        network_calls.append((args, kwargs))
+        raise AssertionError("unexpected network request for an invalid destination")
+
+    monkeypatch.setattr(tool_manager.urllib.request, "urlopen", fail_fast_urlopen)
     err = tm.download_tool("universal_mail_cleaner")
 
     assert err is not None
     assert err.startswith("Download error: cannot prepare destination:")
+    assert network_calls == []
+    assert sentinel.read_text(encoding="utf-8") == "blocked"
+
+
+def test_download_tool_returns_error_when_destination_stat_fails(tm, tmp_path, monkeypatch):
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    download_root.mkdir()
+    dest_dir = download_root / "universal_mail_cleaner"
+    dest_dir.mkdir()
+    sentinel = dest_dir / "keep.txt"
+    sentinel.write_text("keep", encoding="utf-8")
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    original_stat = Path.stat
+
+    def fail_destination_stat(path, *args, **kwargs):
+        if path == dest_dir:
+            raise PermissionError("synthetic destination stat failure")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", fail_destination_stat)
+    network_calls = []
+
+    def fail_fast_urlopen(*args, **kwargs):
+        network_calls.append((args, kwargs))
+        raise AssertionError("unexpected network request after a destination stat failure")
+
+    monkeypatch.setattr(tool_manager.urllib.request, "urlopen", fail_fast_urlopen)
+    err = tm.download_tool("universal_mail_cleaner")
+
+    assert err is not None
+    assert err.startswith("Download error: cannot prepare destination:")
+    assert "synthetic destination stat failure" in err
+    assert network_calls == []
+    assert sentinel.read_text(encoding="utf-8") == "keep"
 
 
 def test_download_tool_extracts_flat_archive(tm, tmp_path, monkeypatch):
