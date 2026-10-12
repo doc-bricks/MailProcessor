@@ -43,6 +43,7 @@ jobs:
       - name: Diagnose Windows pytest process shutdown
         shell: pwsh
         env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
           QT_QPA_PLATFORM: offscreen
           PYTHONIOENCODING: utf-8
         run: |
@@ -61,6 +62,29 @@ jobs:
           $pytestExitCode = $LASTEXITCODE
           Write-Output "PYTEST_PROCESS_EXIT_CODE=$pytestExitCode"
           Write-Output "PYTEST_PROCESS_END"
+          if ($pytestExitCode -ne 0 -and $env:PYTHON_VERSION -in @('3.10', '3.11')) {
+            Write-Output "MODULE_DIAGNOSIS_START=full-suite-exit-$pytestExitCode"
+            $moduleFailures = @()
+            $testFiles = @(Get-ChildItem tests -Filter 'test_*.py' -File | Sort-Object Name)
+            foreach ($testFile in $testFiles) {
+              $relativePath = "tests/$($testFile.Name)"
+              Write-Output "MODULE_CHILD_START=$relativePath"
+              python -X faulthandler -m pytest -q $relativePath
+              $moduleExitCode = $LASTEXITCODE
+              Write-Output "MODULE_CHILD_EXIT_CODE=${relativePath}:$moduleExitCode"
+              if ($moduleExitCode -ne 0) {
+                $moduleFailures += "$relativePath=$moduleExitCode"
+              }
+            }
+            Write-Output "MODULE_CHILD_COUNT=$($testFiles.Count)"
+            if ($moduleFailures.Count -eq 0) {
+              Write-Output "MODULE_DIAGNOSIS_ALL_CHILDREN_EXITED_0; FULL_SUITE_REMAINS_FAILED=$pytestExitCode"
+            } else {
+              Write-Output "MODULE_DIAGNOSIS_FAILURES=$($moduleFailures -join '; ')"
+              Write-Output "FULL_SUITE_REMAINS_FAILED=$pytestExitCode"
+            }
+            Write-Output "MODULE_DIAGNOSIS_END"
+          }
           Write-Output "DIAGNOSTIC_END"
           exit $pytestExitCode
 
