@@ -40,15 +40,7 @@ jobs:
       - name: Lint with ruff
         run: python -m ruff check .
 
-      - name: Run tests
-        if: matrix.python-version != '3.12'
-        env:
-          QT_QPA_PLATFORM: offscreen
-          PYTHONIOENCODING: utf-8
-        run: python -m pytest -q
-
-      - name: Diagnose Python 3.12 test process shutdown
-        if: matrix.python-version == '3.12'
+      - name: Diagnose Windows pytest process shutdown
         shell: pwsh
         env:
           QT_QPA_PLATFORM: offscreen
@@ -56,7 +48,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           $PSNativeCommandUseErrorActionPreference = $false
-          Write-Output "DIAGNOSTIC_START: Python 3.12 pytest"
+          Write-Output "DIAGNOSTIC_START: Windows pytest process"
           python -c 'import importlib.metadata as m, sys; print("PYTHON_VERSION="+sys.version.split()[0]); print("PYTEST_VERSION="+m.version("pytest")); print("PYSIDE6_VERSION="+m.version("PySide6")); print("SHIBOKEN6_VERSION="+m.version("shiboken6"))'
           $versionExitCode = $LASTEXITCODE
           Write-Output "VERSION_PROBE_PROCESS_EXIT_CODE=$versionExitCode"
