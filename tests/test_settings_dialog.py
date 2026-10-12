@@ -1,20 +1,8 @@
 """Tests for settings_dialog.py — rescan feedback and tool management."""
-import os
-
-import pytest
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from config import AppConfig, ToolConfig
 from i18n import set_language
-
-
-@pytest.fixture
-def qapp():
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    return app
 
 
 def test_rescan_shows_rescan_done_when_tools_added(qapp, tmp_path, monkeypatch):

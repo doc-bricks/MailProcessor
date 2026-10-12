@@ -40,11 +40,53 @@ jobs:
       - name: Lint with ruff
         run: python -m ruff check .
 
-      - name: Run tests
+      - name: Diagnose Windows pytest process shutdown
+        shell: pwsh
         env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
           QT_QPA_PLATFORM: offscreen
           PYTHONIOENCODING: utf-8
-        run: python -m pytest -q
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $PSNativeCommandUseErrorActionPreference = $false
+          Write-Output "DIAGNOSTIC_START: Windows pytest process"
+          python -c 'import importlib.metadata as m, sys; print("PYTHON_VERSION="+sys.version.split()[0]); print("PYTEST_VERSION="+m.version("pytest")); print("PYSIDE6_VERSION="+m.version("PySide6")); print("SHIBOKEN6_VERSION="+m.version("shiboken6"))'
+          $versionExitCode = $LASTEXITCODE
+          Write-Output "VERSION_PROBE_PROCESS_EXIT_CODE=$versionExitCode"
+          if ($versionExitCode -ne 0) {
+            Write-Output "DIAGNOSTIC_END: version probe failed"
+            exit $versionExitCode
+          }
+          Write-Output "PYTEST_PROCESS_START"
+          python -X faulthandler -m pytest -q
+          $pytestExitCode = $LASTEXITCODE
+          Write-Output "PYTEST_PROCESS_EXIT_CODE=$pytestExitCode"
+          Write-Output "PYTEST_PROCESS_END"
+          if ($pytestExitCode -ne 0 -and $env:PYTHON_VERSION -in @('3.10', '3.11')) {
+            Write-Output "MODULE_DIAGNOSIS_START=full-suite-exit-$pytestExitCode"
+            $moduleFailures = @()
+            $testFiles = @(Get-ChildItem tests -Filter 'test_*.py' -File | Sort-Object Name)
+            foreach ($testFile in $testFiles) {
+              $relativePath = "tests/$($testFile.Name)"
+              Write-Output "MODULE_CHILD_START=$relativePath"
+              python -X faulthandler -m pytest -q $relativePath
+              $moduleExitCode = $LASTEXITCODE
+              Write-Output "MODULE_CHILD_EXIT_CODE=${relativePath}:$moduleExitCode"
+              if ($moduleExitCode -ne 0) {
+                $moduleFailures += "$relativePath=$moduleExitCode"
+              }
+            }
+            Write-Output "MODULE_CHILD_COUNT=$($testFiles.Count)"
+            if ($moduleFailures.Count -eq 0) {
+              Write-Output "MODULE_DIAGNOSIS_ALL_CHILDREN_EXITED_0; FULL_SUITE_REMAINS_FAILED=$pytestExitCode"
+            } else {
+              Write-Output "MODULE_DIAGNOSIS_FAILURES=$($moduleFailures -join '; ')"
+              Write-Output "FULL_SUITE_REMAINS_FAILED=$pytestExitCode"
+            }
+            Write-Output "MODULE_DIAGNOSIS_END"
+          }
+          Write-Output "DIAGNOSTIC_END"
+          exit $pytestExitCode
 
       - name: Compile Python sources
         env:
