@@ -1,23 +1,12 @@
 """Tests for installer.py - wizard state and download tracking."""
 
-import os
-
 import pytest
-from PySide6.QtWidgets import QApplication, QDialog, QPushButton
+from PySide6.QtWidgets import QDialog, QPushButton
 
 from config import AppConfig, ToolConfig
 from i18n import set_language
 from installer import PathsPage, ToolsPage, WelcomePage
 from tool_manager import ToolManager
-
-
-@pytest.fixture
-def qapp():
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    return app
 
 
 @pytest.fixture
@@ -55,7 +44,7 @@ def test_settings_cancel_restores_tool_registrations(qapp, monkeypatch):
 
     monkeypatch.setattr(SettingsDialog, "exec", _fake_exec)
 
-    tray = MailProcessorTray(cfg)
+    tray = MailProcessorTray(cfg, parent=qapp)
     tray._open_settings()
 
     assert cfg.tools["universal_mail_cleaner"].enabled is True, (
