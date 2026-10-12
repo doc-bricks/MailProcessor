@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 
 from PIL import Image
+import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -32,6 +33,7 @@ def get_ico_sizes(ico_path: Path) -> list[tuple[int, int]]:
     return sorted(sizes)
 
 
+@pytest.mark.usefixtures("qapp")
 class TestMailProcessorIconsAndAssets(unittest.TestCase):
     """Testet Existenz, Dimensionen und Layer-Vollständigkeit aller Icons."""
 

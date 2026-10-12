@@ -5,14 +5,13 @@ import sys
 from pathlib import Path
 
 import pytest
-from PySide6.QtWidgets import QApplication
 
 import config as cfg_module
 import main as main_module
 
 
 @pytest.fixture
-def isolated_qapp(monkeypatch, tmp_path):
+def isolated_qapp(qapp, monkeypatch, tmp_path):
     profile = tmp_path / "profile"
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     monkeypatch.setenv("LOCALAPPDATA", str(profile / "localappdata"))
@@ -21,10 +20,7 @@ def isolated_qapp(monkeypatch, tmp_path):
     monkeypatch.setenv("TEMP", str(profile / "temp"))
     monkeypatch.setenv("TMP", str(profile / "temp"))
 
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    return app, profile
+    return qapp, profile
 
 
 def test_self_test_checks_frozen_ui_without_loading_or_saving_profile(

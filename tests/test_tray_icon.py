@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import hashlib
-import os
 import struct
 from pathlib import Path
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
 import tray
 
@@ -34,13 +31,11 @@ def _read_ico_sizes(path: Path) -> set[tuple[int, int]]:
     return sizes
 
 
-def test_runtime_icon_loads_from_file_instead_of_fallback():
-    app = QApplication.instance() or QApplication([])
-
+def test_runtime_icon_loads_from_file_instead_of_fallback(qapp):
     icon = tray._load_tray_icon()
     fallback = tray._make_tray_icon()
 
-    assert app is not None
+    assert qapp is not None
     assert not icon.isNull()
     assert icon.cacheKey() != fallback.cacheKey()
 
@@ -58,7 +53,7 @@ def test_runtime_icon_contains_expected_sizes():
     assert {(16, 16), (32, 32), (48, 48), (256, 256)}.issubset(sizes)
 
 
-def test_pyside6_keeps_context_menu_alive_after_gc():
+def test_pyside6_keeps_context_menu_alive_after_gc(qapp):
     """Dokumentiert: PySide6 hält QMenu intern am Leben nach setContextMenu().
 
     Auch ohne Python-Instanzvariable (lokale Variable) überlebt das QMenu gc.collect().
@@ -67,10 +62,7 @@ def test_pyside6_keeps_context_menu_alive_after_gc():
     """
     import gc
 
-    from PySide6.QtWidgets import QMenu, QSystemTrayIcon
-
-    _app = QApplication.instance() or QApplication([])
-    icon = QSystemTrayIcon()
+    icon = QSystemTrayIcon(qapp)
     local_menu = QMenu()
     local_menu.addAction("MarkAction")
     icon.setContextMenu(local_menu)
@@ -82,14 +74,13 @@ def test_pyside6_keeps_context_menu_alive_after_gc():
     assert len(result.actions()) > 0, "Aktionen bleiben nach GC erhalten"
 
 
-def test_build_menu_stores_menu_as_instance_variable():
+def test_build_menu_stores_menu_as_instance_variable(qapp):
     """_build_menu muss self._context_menu setzen damit Python-GC das QMenu nicht löscht."""
     from config import AppConfig
     from tray import MailProcessorTray
 
-    _app = QApplication.instance() or QApplication([])
     cfg = AppConfig()
-    tray_icon = MailProcessorTray(cfg)
+    tray_icon = MailProcessorTray(cfg, parent=qapp)
 
     assert hasattr(tray_icon, "_context_menu"), "_context_menu muss als Instanzvariable gehalten werden"
     assert tray_icon._context_menu is not None
