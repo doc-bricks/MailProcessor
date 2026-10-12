@@ -76,3 +76,6 @@ Windows mail tools launcher with optional GitHub downloads
 Universal Mail Cleaner Docs Grabber Invoice Mail hub
 Windows mail tool manager Python desktop
 ```
+
+## Related tools
+- [llm-note](https://github.com/doc-bricks/llm-note): standalone local SQLite and plain-text notebook for personal or agent notes; complements MailProcessor's local launcher for mail tools.

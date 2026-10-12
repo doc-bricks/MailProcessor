@@ -235,6 +235,7 @@ Part of the [doc-bricks](https://github.com/doc-bricks) mail suite and [open-bri
 | [FormularErstellen](https://github.com/doc-bricks/FormularErstellen) | Document Tools | Interactive form generator and document template engine | Sibling Tool | `doc-bricks/FormularErstellen` |
 | [PDFtoPDFocr](https://github.com/doc-bricks/PDFtoPDFocr) | Document OCR | Searchable PDF OCR pipeline and document text recognition | Sibling Tool | `doc-bricks/PDFtoPDFocr` |
 | [DokuZen](https://github.com/doc-bricks/DokuZen) | Knowledge Hub | Desktop document organizer, file classifier, and knowledge hub | Sibling Tool | `doc-bricks/DokuZen` |
+| [llm-note](https://github.com/doc-bricks/llm-note) | Local Notes | Standalone SQLite and plain-text notebook for personal or agent notes | Related Tool | `doc-bricks/llm-note` |
 | [open-bricks](https://github.com/open-bricks) | Umbrella | Umbrella ecosystem, shared policies, and open-source catalog | Umbrella Hub | `open-bricks/open-bricks` |
 
 ## License

@@ -238,6 +238,7 @@ Teil der [doc-bricks](https://github.com/doc-bricks) Mail-Suite und des [open-br
 | [FormularErstellen](https://github.com/doc-bricks/FormularErstellen) | Dokumenten-Tools | Interaktiver Formular-Generator und Vorlagen-Engine | Schwesterwerkzeug | `doc-bricks/FormularErstellen` |
 | [PDFtoPDFocr](https://github.com/doc-bricks/PDFtoPDFocr) | Dokumenten-OCR | Durchsuchbare PDF-OCR-Pipeline und Texterkennung | Schwesterwerkzeug | `doc-bricks/PDFtoPDFocr` |
 | [DokuZen](https://github.com/doc-bricks/DokuZen) | Wissens-Hub | Desktop-Dokumentenorganizer, Dateiklassifizierer und Wissens-Hub | Schwesterwerkzeug | `doc-bricks/DokuZen` |
+| [llm-note](https://github.com/doc-bricks/llm-note) | Lokale Notizen | Eigenständiges SQLite- und Klartext-Notizbuch für persönliche Notizen und Beobachtungen von KI-Agenten | Verwandtes Werkzeug | `doc-bricks/llm-note` |
 | [open-bricks](https://github.com/open-bricks) | Dachverband | Dachorganisation des Ökosystems, gemeinsame Richtlinien und Katalog | Dachverband | `open-bricks/open-bricks` |
 
 ## Lizenz
