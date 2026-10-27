@@ -7,6 +7,7 @@ import pytest
 
 import config as cfg_module
 from config import AppConfig, ToolConfig
+from tool_manager import ToolManager
 
 
 @pytest.fixture(autouse=True)
@@ -201,6 +202,35 @@ def test_load_ignores_non_mapping_tools_block_but_keeps_global_settings(tmp_path
     assert cfg.first_run is False
     assert cfg.start_with_windows is True
     assert cfg.tools == {}
+
+
+def test_load_normalizes_invalid_tool_field_types(tmp_path):
+    """Malformed persisted tool fields must not crash later path checks."""
+    config_dir = Path(str(cfg_module.CONFIG_DIR))
+    config_dir.mkdir(parents=True, exist_ok=True)
+    cfg_file = Path(str(cfg_module.CONFIG_FILE))
+    cfg_file.write_text(
+        json.dumps(
+            {
+                "tools": {
+                    "universal_mail_cleaner": {
+                        "enabled": "yes",
+                        "path": {"unexpected": "object"},
+                        "main_script": ["main.py"],
+                        "installed_by": 42,
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    tool = cfg_module.load().tools["universal_mail_cleaner"]
+
+    assert ToolManager(AppConfig(tools={"universal_mail_cleaner": tool})).is_path_valid(
+        "universal_mail_cleaner"
+    ) is False
+    assert tool == ToolConfig()
 
 
 def test_get_tool_auto_creates():

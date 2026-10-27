@@ -20,6 +20,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- **Defensive Tool-Konfiguration beim Laden (config.py) (2026-10-27)**:
+  - Gespeicherte Toolfelder werden beim Laden nun typgeprüft normalisiert.
+    Ungültige Werte für `enabled`, `path`, `main_script` oder `installed_by`
+    fallen auf sichere Standardwerte zurück, statt spätere Pfadprüfungen mit
+    `TypeError` abbrechen zu lassen.
+  - Neuer Regressionstest deckt eine beschädigte JSON-Konfiguration mit
+    Objekt-/Listenwerten ab und durchläuft den echten Tool-Pfadcheck.
+
 - **Installer-Synchronisation, Provenance-Erhalt & Skript-Validierung (installer.py & tool_manager.py) (2026-09-18)**:
   - **Synchronisation abgewählter Tools**: In `InstallerWizard._on_finish()` werden abgewählte Tools nun explizit deregistriert (`self._tm.unregister(tid)`), anstatt sie unverändert aktiviert zu lassen, wenn sie zuvor (z. B. durch Download oder Vorbelegung) aktiviert wurden.
   - **Provenance-Erhalt bei GitHub-Downloads**: Tools mit `installed_by="github"` behalten ihre Herkunfts-Metadaten bei Abschluss des Assistenten, anstatt pauschal mit `"installer"` überschrieben zu werden.

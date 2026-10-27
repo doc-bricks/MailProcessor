@@ -62,10 +62,14 @@ def load() -> AppConfig:
             if not isinstance(tid, str) or not isinstance(tdata, dict):
                 continue
             cfg.tools[tid] = ToolConfig(
-                enabled=tdata.get("enabled", False),
-                path=tdata.get("path"),
-                main_script=tdata.get("main_script"),
-                installed_by=tdata.get("installed_by"),
+                enabled=tdata.get("enabled") if isinstance(tdata.get("enabled"), bool) else False,
+                path=tdata.get("path") if isinstance(tdata.get("path"), str) else None,
+                main_script=(
+                    tdata.get("main_script") if isinstance(tdata.get("main_script"), str) else None
+                ),
+                installed_by=(
+                    tdata.get("installed_by") if isinstance(tdata.get("installed_by"), str) else None
+                ),
             )
         return cfg
     except Exception:
