@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+
 try:
     import tomllib
 except ModuleNotFoundError:
@@ -38,6 +40,7 @@ def test_ci_workflow_integrity():
     assert '"3.10"' in workflow_content
     assert '"3.11"' in workflow_content
     assert '"3.12"' in workflow_content
+    assert '"3.13"' in workflow_content
 
     # Quality and test steps
     assert "ruff check ." in workflow_content
@@ -46,14 +49,15 @@ def test_ci_workflow_integrity():
 
 
 def test_pyproject_pep621_metadata():
-    """Verify pyproject.toml PEP 621 compliance, classifiers, and ecosystem URLs."""
+    """Verify pyproject.toml PEP 621/639 compliance, classifiers, and ecosystem URLs."""
     raw_toml = _read_file("pyproject.toml")
     data = tomllib.loads(raw_toml)
 
     project = data.get("project", {})
     assert project.get("name") == "doc-bricks-mailprocessor"
     assert project.get("version") == "0.1.0"
-    assert project.get("license", {}).get("text") == "MIT"
+    assert project.get("license") == "MIT"
+    assert project.get("license-files") == ["LICENSE"]
 
     classifiers = project.get("classifiers", [])
     expected_classifiers = [
@@ -61,18 +65,22 @@ def test_pyproject_pep621_metadata():
         "Environment :: Win32 (MS Windows)",
         "Environment :: X11 Applications :: Qt",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Communications :: Email",
         "Topic :: Desktop Environment",
         "Topic :: Utilities",
     ]
     for clf in expected_classifiers:
         assert clf in classifiers, f"Classifier '{clf}' missing from pyproject.toml"
+
+    # PEP 639 rule: License string in project must not co-exist with OSI classifiers
+    assert "License :: OSI Approved :: MIT License" not in classifiers
+    assert not any(clf.startswith("License ::") for clf in classifiers)
 
     urls = project.get("urls", {})
     expected_urls = {
@@ -158,9 +166,30 @@ def test_gitignore_integrity():
         "*.conflict",
         "*-CONFLIT-*",
         "LOCK*.txt",
+        "MARKETING-LOG.txt",
+        "*.receipt.json",
+        "dist/",
+        "build/",
     ]
     for entry in required_entries:
         assert entry in gitignore_content, f"Entry '{entry}' missing from .gitignore"
+
+
+def test_marketing_log_not_tracked_and_policy_compliant():
+    """Verify MARKETING-LOG.txt is untracked in git repository and ignored per GITHUB-POLICY."""
+    gitignore_content = _read_file(".gitignore")
+    assert "MARKETING-LOG.txt" in gitignore_content
+    assert "*.receipt.json" in gitignore_content
+
+    # If git is available, verify git ls-files does not track MARKETING-LOG.txt
+    res = subprocess.run(
+        ["git", "ls-files", "MARKETING-LOG.txt"],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+    )
+    if res.returncode == 0:
+        assert res.stdout.strip() == "", "MARKETING-LOG.txt must not be tracked in git repository"
 
 
 def test_readme_bilingual_parity():
@@ -196,7 +225,7 @@ def test_readme_bilingual_parity():
 
     # Governance invariants in both
     expected_invariants = [
-            "INV-DATA-01",
+        "INV-DATA-01",
         "INV-NOELEV-02",
         "INV-ZIPSLIP-03",
         "INV-CFGISO-04",

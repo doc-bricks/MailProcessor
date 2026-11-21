@@ -31,10 +31,16 @@ tools/
 
 # Release artifacts
 releases/
+dist/
+build/
 *.zip
 *.exe
 *.msix
 SHA256SUMS.txt
+
+# Marketing & automation logs (never track in repository per GITHUB-POLICY)
+MARKETING-LOG.txt
+*.receipt.json
 
 # Sync & patch artifacts
 *.sync-conflict-*

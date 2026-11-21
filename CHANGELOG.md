@@ -54,6 +54,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Maintenance
 
+- **Technical Hygiene, PEP 639 License Standardization & Git Tracking Protection (2026-10-31)**:
+  - **Git Tracking Protection & .gitignore Hardening**: Untracked `MARKETING-LOG.txt` from git repository index and updated `.gitignore` to strictly exclude `MARKETING-LOG.txt`, `*.receipt.json`, `dist/`, and `build/`, enforcing GITHUB-POLICY zero-pollution requirements.
+  - **PEP 639 License Compliance**: Modernized `pyproject.toml` with `license = "MIT"` and `license-files = ["LICENSE"]`, removing redundant `"License :: OSI Approved :: MIT License"` classifier to prevent `InvalidConfigError` in modern setuptools, and declared Python 3.13 support.
+  - **CI Workflow Hardening**: Expanded multi-OS `source-smoke` and Windows test matrices in `.github/workflows/tests.yml` to include Python 3.13.
+  - **Contract Test Suite Expansion**: Updated `tests/test_metadata.py` with automated assertions for PEP 639 license structure, absence of conflicting OSI classifiers, `.gitignore` log protection, and untracked status of `MARKETING-LOG.txt` (106/106 tests passing, 100% green).
+
+
 - **Technical Hygiene, CI Workflow Hardening & Metadata Contract Suite (2026-09-06)**:
   - **CI Workflow Hardening**: Upgraded `.github/workflows/tests.yml` to official stable actions (`actions/checkout@v4`, `actions/setup-python@v5` with pip cache), added concurrency control with `cancel-in-progress: true`, added a dedicated `ruff check .` linting gate on Windows, and added a multi-OS `source-smoke` matrix job across Ubuntu and macOS for Python 3.10-3.12 executing `source_platform_smoke.py` and `test_source_platform_smoke_contract.py`.
   - **PEP 621 Metadata**: Enhanced `pyproject.toml` with standard classifiers (`Environment :: Win32 (MS Windows)`, `Environment :: X11 Applications :: Qt`, `Topic :: Communications :: Email`, `Topic :: Desktop Environment`, `Topic :: Utilities`), complete ecosystem URLs (Homepage, Repository, Bug Tracker, Changelog, Documentation, Security, Parent Organization, Umbrella Ecosystem), and `[tool.ruff]` configuration.
