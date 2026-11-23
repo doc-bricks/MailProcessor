@@ -41,13 +41,27 @@ def _normalize_cmd_token(token: str) -> str:
 
 
 def _command_tokens(command: str) -> list[str]:
-    if not command:
+    if not command or not command.strip():
         return []
     try:
         tokens = shlex.split(command, posix=False)
-    except Exception:
-        tokens = command.split()
-    return [token.strip() for token in tokens if token]
+    except ValueError:
+        return []
+    cleaned: list[str] = []
+    for token in tokens:
+        stripped = token.strip()
+        if not stripped:
+            continue
+        if (
+            stripped.startswith('"')
+            and (len(stripped) == 1 or not stripped.endswith('"'))
+        ) or (
+            stripped.startswith("'")
+            and (len(stripped) == 1 or not stripped.endswith("'"))
+        ):
+            return []
+        cleaned.append(stripped)
+    return cleaned
 
 
 def _read_autostart_command() -> str | None:
@@ -69,7 +83,7 @@ def _read_autostart_command() -> str | None:
 def _is_current_autostart_command(stored_command: str) -> bool:
     expected = _command_tokens(_expected_autostart_command())
     current = _command_tokens(stored_command)
-    if len(current) < len(expected):
+    if not expected or len(current) != len(expected):
         return False
 
     for idx, expected_token in enumerate(expected):
@@ -204,7 +218,7 @@ class SettingsDialog(QDialog):
                 path_text = t.path or ""
             else:
                 status = tr("status_active")
-                path_text = f"{t.path}\\{t.main_script}"
+                path_text = str(Path(t.path) / t.main_script)
 
             status_item = QTableWidgetItem(status)
             path_item = QTableWidgetItem(path_text)

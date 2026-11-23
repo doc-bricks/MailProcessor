@@ -5,8 +5,17 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from datetime import datetime
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError:
+        tomllib = None  # type: ignore[assignment]
 
 from config import AppConfig
 from tool_manager import TOOL_DEFINITIONS, ToolManager
@@ -57,14 +66,44 @@ def write_snapshot(
     cfg: AppConfig,
     exported_at: datetime | None = None,
 ) -> Path:
+    if isinstance(target_path, str) and not target_path.strip():
+        raise ValueError("Snapshot target path must not be empty.")
     destination = Path(target_path)
-    if destination.parent and str(destination.parent) not in ("", "."):
+    if not str(destination).strip():
+        raise ValueError("Snapshot target path must not be empty.")
+    if destination.is_symlink():
+        raise ValueError(f"Refusing to overwrite symlink snapshot target: {destination}")
+    if destination.exists() and destination.is_dir():
+        raise IsADirectoryError(f"Snapshot destination is a directory: {destination}")
+
+    has_explicit_parent = bool(destination.parent) and str(destination.parent) not in ("", ".")
+    if has_explicit_parent:
         destination.parent.mkdir(parents=True, exist_ok=True)
+    parent_dir = destination.parent if has_explicit_parent else Path(".")
+
     payload = build_snapshot_payload(cfg, exported_at=exported_at)
-    destination.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    serialized = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=parent_dir,
+            prefix=".mailprocessor-snapshot-",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = Path(handle.name)
+            handle.write(serialized)
+        os.replace(temp_path, destination)
+        temp_path = None
+    finally:
+        if temp_path is not None:
+            try:
+                temp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
     return destination
 
 
@@ -101,6 +140,61 @@ def _tool_status(tool_manager: ToolManager, tool_id: str) -> str:
     return "missing"
 
 
+def _extract_pyproject_version(text: str) -> str:
+    if tomllib is not None:
+        data = tomllib.loads(text)
+        if isinstance(data, dict):
+            project = data.get("project")
+            if isinstance(project, dict):
+                version = project.get("version")
+                if isinstance(version, str) and version.strip():
+                    return version.strip()
+        return ""
+
+    in_project = False
+    bracket_depth = 0
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if bracket_depth == 0:
+            header_match = re.match(r"^\[+\s*([^\[\]]+?)\s*\]+\s*(?:#.*)?$", stripped)
+            if header_match:
+                in_project = header_match.group(1).strip() == "project"
+                continue
+            if in_project:
+                ver_match = re.match(
+                    r"""^version\s*=\s*(?:"([^"]+)"|'([^']+)')\s*(?:#.*)?$""",
+                    stripped,
+                )
+                if ver_match:
+                    value = (ver_match.group(1) or ver_match.group(2) or "").strip()
+                    if value:
+                        return value
+        in_quote: str | None = None
+        escaped = False
+        for ch in stripped:
+            if escaped:
+                escaped = False
+                continue
+            if ch == "\\" and in_quote == '"':
+                escaped = True
+                continue
+            if in_quote is not None:
+                if ch == in_quote:
+                    in_quote = None
+                continue
+            if ch in ('"', "'"):
+                in_quote = ch
+            elif ch == "#":
+                break
+            elif ch == "[":
+                bracket_depth += 1
+            elif ch == "]" and bracket_depth > 0:
+                bracket_depth -= 1
+    return ""
+
+
 def _read_app_version() -> str:
     changelog_path = APP_ROOT / "CHANGELOG.md"
     if changelog_path.is_file():
@@ -116,9 +210,9 @@ def _read_app_version() -> str:
     if pyproject_path.is_file():
         try:
             text = pyproject_path.read_text(encoding="utf-8", errors="ignore")
-            match = re.search(r"""(?m)^\s*version\s*=\s*["']([^"']+)["']""", text)
-            if match:
-                return match.group(1).strip()
+            version = _extract_pyproject_version(text)
+            if version:
+                return version
         except Exception:
             pass
 
@@ -149,19 +243,33 @@ def sys_platform_startswith(prefix: str) -> bool:
 
 
 def _redact_path_hint(path_value: str | None) -> str | None:
-    if not path_value:
+    if not isinstance(path_value, str) or not path_value.strip():
         return None
+    cleaned = path_value.strip()
 
-    local_hint = _path_hint_relative_to(path_value, LOCALAPPDATA_ROOT, "LOCALAPPDATA")
-    if local_hint:
-        return local_hint
+    home_root = Path.home()
+    try:
+        same_base = LOCALAPPDATA_ROOT.resolve(strict=False) == home_root.resolve(strict=False)
+    except Exception:
+        same_base = LOCALAPPDATA_ROOT == home_root
 
-    home_hint = _path_hint_relative_to(path_value, Path.home(), "HOME")
-    if home_hint:
-        return home_hint
+    if Path(cleaned).is_absolute():
+        bases = (
+            ((home_root, "HOME"),)
+            if same_base
+            else ((LOCALAPPDATA_ROOT, "LOCALAPPDATA"), (home_root, "HOME"))
+        )
+        for base_path, label in bases:
+            hint = _path_hint_relative_to(cleaned, base_path, label)
+            if hint:
+                return hint
 
-    path = Path(path_value)
-    parts = [part for part in path.parts if part not in {path.anchor, "\\", "/", "."}]
+    normalized = Path(os.path.normpath(cleaned))
+    parts = [
+        part
+        for part in normalized.parts
+        if part not in {normalized.anchor, "\\", "/", ".", ".."}
+    ]
     if not parts:
         return None
     tail = parts[-2:] if len(parts) >= 2 else parts
