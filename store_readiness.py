@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -17,6 +18,33 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from urllib.parse import urlparse
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError:
+        tomllib = None  # type: ignore[assignment]
+
+_RESCAP_NS = "http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+_IGNORED_DIRS = frozenset(
+    {
+        ".git",
+        ".venv",
+        "venv",
+        "env",
+        "build",
+        "dist",
+        "__pycache__",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".mypy_cache",
+        "_archive",
+        "_archiv",
+        "node_modules",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -38,21 +66,86 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _iter_project_files(project_root: Path) -> Iterable[Path]:
+    for current_root, dirs, files in os.walk(project_root):
+        dirs[:] = sorted(d for d in dirs if d not in _IGNORED_DIRS)
+        base = Path(current_root)
+        for filename in sorted(files):
+            candidate = base / filename
+            if candidate.is_file():
+                yield candidate
+
+
+def _extract_pyproject_project_version(text: str) -> str:
+    if tomllib is not None:
+        try:
+            data = tomllib.loads(text)
+        except Exception as exc:
+            raise ValueError(f"pyproject.toml ungültig: {exc}") from exc
+        if not isinstance(data, dict) or not isinstance(data.get("project"), dict):
+            raise ValueError("[project] fehlt in pyproject.toml")
+        version = data["project"].get("version")
+        if not isinstance(version, str) or not version.strip():
+            raise ValueError("[project].version fehlt in pyproject.toml")
+        return version.strip()
+
+    found_project = False
+    in_project = False
+    bracket_depth = 0
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if bracket_depth == 0:
+            header_match = re.match(r"^\[+\s*([^\[\]]+?)\s*\]+\s*(?:#.*)?$", stripped)
+            if header_match:
+                in_project = header_match.group(1).strip() == "project"
+                if in_project:
+                    found_project = True
+                continue
+            if in_project:
+                ver_match = re.match(
+                    r"""^version\s*=\s*(?:"([^"]+)"|'([^']+)')\s*(?:#.*)?$""",
+                    stripped,
+                )
+                if ver_match:
+                    value = (ver_match.group(1) or ver_match.group(2) or "").strip()
+                    if value:
+                        return value
+        in_quote: str | None = None
+        escaped = False
+        for ch in stripped:
+            if escaped:
+                escaped = False
+                continue
+            if ch == "\\" and in_quote == '"':
+                escaped = True
+                continue
+            if in_quote is not None:
+                if ch == in_quote:
+                    in_quote = None
+                continue
+            if ch in ('"', "'"):
+                in_quote = ch
+            elif ch == "#":
+                break
+            elif ch == "[":
+                bracket_depth += 1
+            elif ch == "]" and bracket_depth > 0:
+                bracket_depth -= 1
+    if not found_project:
+        raise ValueError("[project] fehlt in pyproject.toml")
+    raise ValueError("[project].version fehlt in pyproject.toml")
+
+
 def _project_version(project_root: Path) -> str:
+    if not project_root.is_dir():
+        raise ValueError(f"Projektverzeichnis fehlt: {project_root}")
     pyproject = project_root / "pyproject.toml"
     if not pyproject.is_file():
         raise ValueError("pyproject.toml fehlt")
     text = pyproject.read_text(encoding="utf-8")
-    project_match = re.search(r"(?ms)^\[project\]\s*$\n(.*?)(?=^\[|\Z)", text)
-    if project_match is None:
-        raise ValueError("[project] fehlt in pyproject.toml")
-    version_match = re.search(
-        r'''(?m)^\s*version\s*=\s*["']([^"']+)["']\s*$''',
-        project_match.group(1),
-    )
-    if version_match is None or not version_match.group(1).strip():
-        raise ValueError("[project].version fehlt in pyproject.toml")
-    return version_match.group(1).strip()
+    return _extract_pyproject_project_version(text)
 
 
 def _four_part_version(version: str) -> str:
@@ -86,21 +179,44 @@ def _release_checks(release_dir: Path, version: str) -> list[Check]:
     required_suffixes = ("-desktop.exe", "-source.zip")
     missing_types = [suffix for suffix in required_suffixes if not any(name.endswith(suffix) for name in entries)]
     mismatches: list[str] = []
+    resolved_release_dir = release_dir.resolve()
     for name, expected in entries.items():
-        artifact = (release_dir / name).resolve(strict=False)
-        if not artifact.is_relative_to(release_dir.resolve()) or Path(name).is_absolute():
+        rel_path = Path(name)
+        candidate = release_dir / name
+        if (
+            rel_path.is_absolute()
+            or bool(rel_path.drive)
+            or bool(rel_path.root)
+            or ".." in rel_path.parts
+            or candidate.is_symlink()
+        ):
+            mismatches.append(f"unsicherer Artefaktpfad: {name}")
+            continue
+        artifact = candidate.resolve(strict=False)
+        if not artifact.is_relative_to(resolved_release_dir):
             mismatches.append(f"unsicherer Artefaktpfad: {name}")
             continue
         if not artifact.is_file():
             mismatches.append(f"fehlt: {name}")
-        elif _sha256(artifact) != expected:
-            mismatches.append(f"Hashabweichung: {name}")
+        else:
+            try:
+                actual_hash = _sha256(artifact)
+            except OSError as exc:
+                mismatches.append(f"nicht lesbar ({name}): {exc}")
+                continue
+            if actual_hash != expected:
+                mismatches.append(f"Hashabweichung: {name}")
     for suffix in missing_types:
         mismatches.append(f"kein gelistetes *{suffix}")
 
-    names_match_version = all(version in name for name in entries if name.endswith(required_suffixes))
+    version_pattern = re.compile(rf"(?<![0-9.]){re.escape(version)}(?![0-9.])")
+    names_match_version = all(
+        bool(version_pattern.search(name))
+        for name in entries
+        if name.endswith(required_suffixes)
+    )
     if not names_match_version:
-        mismatches.append(f"Artefaktname enthält nicht Projektversion {version}")
+        mismatches.append(f"Artefaktname enthält nicht exakt Projektversion {version}")
 
     return [
         _check(
@@ -181,25 +297,39 @@ def _store_config_checks(project_root: Path, version: str, required_caps: set[st
 
 
 def _manifest_checks(project_root: Path, version: str, required_caps: set[str]) -> list[Check]:
-    manifests = list(project_root.glob("**/AppxManifest.xml"))
+    manifests = [path for path in _iter_project_files(project_root) if path.name == "AppxManifest.xml"]
     if len(manifests) != 1:
         return [Check("appx_manifest", "blocker", f"Erwartet genau ein AppxManifest.xml, gefunden: {len(manifests)}")]
     try:
-        root = ET.parse(manifests[0]).getroot()
-    except (OSError, ET.ParseError) as exc:
+        manifest_text = manifests[0].read_text(encoding="utf-8")
+        root = ET.fromstring(manifest_text)
+    except (OSError, UnicodeError, ET.ParseError) as exc:
         return [Check("appx_manifest", "blocker", f"AppxManifest.xml ungültig: {exc}")]
 
     identity = next((element for element in root.iter() if element.tag.rsplit("}", 1)[-1] == "Identity"), None)
     manifest_version = identity.attrib.get("Version") if identity is not None else None
-    capabilities = {
-        element.attrib.get("Name", "")
-        for element in root.iter()
-        if element.tag.rsplit("}", 1)[-1] == "Capability"
-    }
+    capabilities: set[str] = set()
+    wrong_ns_fulltrust = False
+    for element in root.iter():
+        if element.tag.rsplit("}", 1)[-1] != "Capability":
+            continue
+        cap_name = element.attrib.get("Name", "").strip()
+        if not cap_name:
+            continue
+        if cap_name == "runFullTrust":
+            if element.tag == f"{{{_RESCAP_NS}}}Capability":
+                capabilities.add(cap_name)
+            else:
+                wrong_ns_fulltrust = True
+        else:
+            capabilities.add(cap_name)
+
     missing_caps = sorted(required_caps - capabilities)
     problems: list[str] = []
     if manifest_version != _four_part_version(version):
         problems.append(f"Manifest-Version {manifest_version!r}, erwartet {_four_part_version(version)}")
+    if wrong_ns_fulltrust:
+        problems.append("runFullTrust muss als rescap:Capability im restrictedcapabilities-Namespace deklariert sein")
     if missing_caps:
         problems.append("fehlende Capabilities: " + ", ".join(missing_caps))
     return [
@@ -212,18 +342,45 @@ def _manifest_checks(project_root: Path, version: str, required_caps: set[str]) 
     ]
 
 
+def _normalize_pkg_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).casefold().strip("-")
+
+
+def _extract_requirement_name(raw_line: str) -> str | None:
+    line = raw_line.split("#", 1)[0].strip()
+    if not line or line.startswith("-"):
+        return None
+    line = line.split(";", 1)[0].strip()
+    line = line.split("@", 1)[0].strip()
+    if not line:
+        return None
+    pkg = re.split(r"[<>=!~\[\s]", line, maxsplit=1)[0].strip()
+    return pkg or None
+
+
 def _dependency_check(project_root: Path) -> Check:
     requirements = project_root / "requirements.txt"
     licenses = project_root / "THIRD_PARTY_LICENSES.txt"
     if not requirements.is_file() or not licenses.is_file():
         return Check("dependency_licenses", "blocker", "requirements.txt oder THIRD_PARTY_LICENSES.txt fehlt")
-    package_names = []
-    for line in requirements.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            package_names.append(re.split(r"[<>=!~\[]", line, maxsplit=1)[0].strip())
-    license_text = licenses.read_text(encoding="utf-8").casefold()
-    missing = [name for name in package_names if name.casefold() not in license_text]
+    try:
+        req_lines = requirements.read_text(encoding="utf-8").splitlines()
+        license_raw = licenses.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return Check("dependency_licenses", "blocker", f"Lizenz-/Abhängigkeitsdatei ungültig: {exc}")
+
+    package_names: list[str] = []
+    for raw_line in req_lines:
+        pkg_name = _extract_requirement_name(raw_line)
+        if pkg_name:
+            package_names.append(pkg_name)
+
+    documented_tokens = {
+        _normalize_pkg_name(tok)
+        for tok in re.findall(r"[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*", license_raw)
+        if _normalize_pkg_name(tok)
+    }
+    missing = [name for name in package_names if _normalize_pkg_name(name) not in documented_tokens]
     return _check(
         "dependency_licenses",
         not missing,
@@ -232,20 +389,53 @@ def _dependency_check(project_root: Path) -> Check:
     )
 
 
+def _is_passing_wack_report(report_path: Path) -> bool:
+    try:
+        raw_text = report_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return False
+
+    suffix = report_path.suffix.casefold()
+    if suffix == ".xml":
+        try:
+            root = ET.fromstring(raw_text)
+        except ET.ParseError:
+            return False
+        overall_results: list[str] = []
+        for elem in root.iter():
+            for attr_key, attr_val in elem.attrib.items():
+                key_lower = attr_key.rsplit("}", 1)[-1].casefold()
+                val_lower = attr_val.strip().casefold()
+                if key_lower == "overall_result":
+                    overall_results.append(val_lower)
+                elif key_lower == "result" and val_lower in {"fail", "failed"}:
+                    return False
+        return bool(overall_results) and all(val in {"pass", "passed"} for val in overall_results)
+
+    if re.search(
+        r"\b(?:fail|failed|failure|failures|pending(?:_[a-z0-9_]+)?|not\s+run|tbd|todo)\b",
+        raw_text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    return bool(
+        re.search(
+            r"(?im)^\s*[-*#>\s]*(?:overall[_\s-]*)?(?:wack[_\s-]*)?(?:result|status|verdict|ergebnis)\s*[:=]\s*\*{0,2}(?:pass|passed|bestanden)\*{0,2}\s*$",
+            raw_text,
+        )
+    )
+
+
 def _distribution_checks(project_root: Path) -> list[Check]:
     docs = [name for name in ("PRIVACY_POLICY.md", "SUPPORT.md") if not (project_root / name).is_file()]
-    packages = list(project_root.glob("**/*.msix"))
+    all_files = list(_iter_project_files(project_root))
+    packages = [path for path in all_files if path.suffix.casefold() == ".msix"]
     wack_reports = [
         path
-        for path in project_root.glob("**/*")
-        if path.is_file() and "wack" in path.name.casefold() and path.suffix.casefold() in {".xml", ".txt", ".md"}
+        for path in all_files
+        if "wack" in path.name.casefold() and path.suffix.casefold() in {".xml", ".txt", ".md"}
     ]
-    valid_wack = False
-    for report in wack_reports:
-        text = report.read_text(encoding="utf-8", errors="replace").casefold()
-        if "pass" in text and "fail" not in text:
-            valid_wack = True
-            break
+    valid_wack = any(_is_passing_wack_report(report) for report in wack_reports)
     return [
         _check(
             "privacy_support_docs",

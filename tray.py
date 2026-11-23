@@ -139,19 +139,30 @@ class MailProcessorTray(QSystemTrayIcon):
 
     def _open_settings(self):
         from PySide6.QtWidgets import QDialog
+        from i18n import get_language, set_language
         from settings_dialog import SettingsDialog
-        # Snapshot tools so Cancel can restore them: ToolManager holds a reference
-        # to the same AppConfig, so mutations from remove/rescan happen immediately.
+
+        # Snapshot mutable config fields and UI language so Cancel restores all of them
+        # without writing to %LOCALAPPDATA%\MailProcessor\config.json.
         tools_snapshot = copy.deepcopy(self._cfg.tools)
+        prev_cfg_lang = self._cfg.language
+        prev_autostart = self._cfg.start_with_windows
+        prev_ui_lang = get_language()
+
         dlg = SettingsDialog(self._cfg)
         if dlg.exec() != QDialog.DialogCode.Accepted:
             self._cfg.tools = tools_snapshot
-        # Rebuild menu in case tools changed
-        self._build_menu()
-        # Persist language change
-        from i18n import get_language
+            self._cfg.language = prev_cfg_lang
+            self._cfg.start_with_windows = prev_autostart
+            if get_language() != prev_ui_lang:
+                set_language(prev_ui_lang)
+            self._build_menu()
+            self.setToolTip(tr("tray_tooltip"))
+            return
+
         if self._cfg.language != get_language():
             self._cfg.language = get_language()
+        self._build_menu()
         cfg_module.save(self._cfg)
         self.setToolTip(tr("tray_tooltip"))
 

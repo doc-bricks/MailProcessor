@@ -186,7 +186,7 @@ def plan_updates(project_dir: Path) -> list[PlannedUpdate]:
             raise MaintenanceError(f"Required target is missing or not a file: {target}")
         try:
             content = target.read_text(encoding="utf-8")
-        except OSError as exc:
+        except (OSError, UnicodeDecodeError) as exc:
             raise MaintenanceError(f"Could not read required target {target}: {exc}") from exc
         updated, status = TRANSFORMS[relative_path](content)
         updates.append(PlannedUpdate(relative_path, status, updated))
@@ -194,15 +194,23 @@ def plan_updates(project_dir: Path) -> list[PlannedUpdate]:
 
 
 def _atomic_write(target: Path, content: str) -> None:
+    temporary_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
             "w", encoding="utf-8", newline="", delete=False, dir=target.parent
         ) as handle:
-            handle.write(content)
             temporary_path = Path(handle.name)
+            handle.write(content)
         os.replace(temporary_path, target)
+        temporary_path = None
     except OSError as exc:
         raise MaintenanceError(f"Could not write {target}: {exc}") from exc
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def run(project_dir: Path, *, apply: bool) -> list[PlannedUpdate]:

@@ -20,6 +20,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- **Einstellungs-/Autostart-Resilienz, atomarer Snapshot-Export & Fail-Closed Store-Readiness-Audit (tray.py, settings_dialog.py, snapshot_export.py, store_readiness.py, update_files.py) (2026-11-23)**:
+  - **Kein ungewolltes Speichern bei „Abbrechen" & exakte Autostart-Prüfung**: `MailProcessorTray._open_settings()` stellt bei `Cancel` nun neben `tools` auch `language`, `start_with_windows` und die globale UI-Sprache wieder her, ohne `config.json` auf die Festplatte zu schreiben. `settings_dialog._is_current_autostart_command()` verlangt exakte Argumentanzahl sowie balancierte Anführungszeichen, sodass veraltete Zusatz-Flags (z. B. `--self-test`) repariert werden; `_refresh_table()` formatiert Skriptpfade plattformneutral über `pathlib.Path`.
+  - **Snapshot-Redaktion & atomares Schreiben**: `_redact_path_hint()` bewahrt das `HOME`-Label auch bei fehlendem/leerem `LOCALAPPDATA`-Fallback, ignoriert reine Whitespace-Pfade, verhindert `CWD`-Auflösung relativer Pfade und normalisiert `..`-Segmente vor der Tail-Redaktion. `_read_app_version()` liest `pyproject.toml` gezielt aus `[project]`, und `write_snapshot()` schreibt atomar über `os.replace` inklusive Temp-File-Cleanup bei Fehlern.
+  - **Store-Readiness-Prüfgates**: `store_readiness.py` prüft Release-Artefakte auf exakte Versionsgrenzen und verwirft Symlinks sowie laufwerksrelative Pfade, verlangt den `restrictedcapabilities`-Namespace (`rescap:Capability`) für `runFullTrust`, parst PEP-508/503-Abhängigkeiten mit Wortgrenzenabgleich gegen `THIRD_PARTY_LICENSES.txt`, unterscheidet echte WACK-XML-/Protokoll-`PASS`-Nachweise von Prosa-Platzhaltern, schließt Archiv-/Venv-Bäume aus und fängt `UnicodeDecodeError` fail-closed als Blocker ab.
+  - **Wartungsskript-Cleanup**: `update_files.py` räumt temporäre Dateien bei fehlgeschlagenem `os.replace()` zuverlässig auf und behandelt ungültiges UTF-8 kontrolliert als `MaintenanceError` (Exitcode `2`).
+  - **Regressionstests**: 8 neue Tests in `tests/test_bugsweep_snapshot_readiness_and_settings_20261123.py` ergänzt.
+
 - **Defensive Tool-Konfiguration beim Laden (config.py) (2026-10-27)**:
   - Gespeicherte Toolfelder werden beim Laden nun typgeprüft normalisiert.
     Ungültige Werte für `enabled`, `path`, `main_script` oder `installed_by`
