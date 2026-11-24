@@ -7,7 +7,6 @@ from pathlib import Path
 from PySide6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QFileDialog, QMenu, QSystemTrayIcon
 
-import config as cfg_module
 from config import AppConfig
 from i18n import tr
 from tool_manager import ToolManager
@@ -163,7 +162,6 @@ class MailProcessorTray(QSystemTrayIcon):
         if self._cfg.language != get_language():
             self._cfg.language = get_language()
         self._build_menu()
-        cfg_module.save(self._cfg)
         self.setToolTip(tr("tray_tooltip"))
 
     def _export_snapshot(self):

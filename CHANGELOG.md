@@ -20,6 +20,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- **Symmetrische Quote-Härtung im Autostart-Parser, Bereinigung doppelten Config-Saves & CodeQL-URL-Check (settings_dialog.py, tray.py, tests/test_installer.py) (2026-11-24)**:
+  - **Symmetrische Anführungszeichen-Prüfung**: `settings_dialog._command_tokens()` lehnt nun symmetrisch sowohl verwaiste öffnende als auch verwaiste schließende oder einzelne Anführungszeichen (`startswith(q) != endswith(q)` bzw. `stripped == q`) ab.
+  - **Kein doppeltes Speichern bei Einstellungs-Übernahme**: Redundantes `cfg_module.save(self._cfg)` in `MailProcessorTray._open_settings()` nach bereits erfolgter Persistierung in `SettingsDialog._on_save()` entfernt.
+  - **CodeQL Alert `#4` (`py/incomplete-url-substring-sanitization`)**: Substring-Prüfung in `tests/test_installer.py` auf exaktes Präfix `.startswith("https://github.com/")` umgestellt; 2 neue Regressionstests in `tests/test_settings_dialog.py`.
+
 - **Einstellungs-/Autostart-Resilienz, atomarer Snapshot-Export & Fail-Closed Store-Readiness-Audit (tray.py, settings_dialog.py, snapshot_export.py, store_readiness.py, update_files.py) (2026-11-23)**:
   - **Kein ungewolltes Speichern bei „Abbrechen" & exakte Autostart-Prüfung**: `MailProcessorTray._open_settings()` stellt bei `Cancel` nun neben `tools` auch `language`, `start_with_windows` und die globale UI-Sprache wieder her, ohne `config.json` auf die Festplatte zu schreiben. `settings_dialog._is_current_autostart_command()` verlangt exakte Argumentanzahl sowie balancierte Anführungszeichen, sodass veraltete Zusatz-Flags (z. B. `--self-test`) repariert werden; `_refresh_table()` formatiert Skriptpfade plattformneutral über `pathlib.Path`.
   - **Snapshot-Redaktion & atomares Schreiben**: `_redact_path_hint()` bewahrt das `HOME`-Label auch bei fehlendem/leerem `LOCALAPPDATA`-Fallback, ignoriert reine Whitespace-Pfade, verhindert `CWD`-Auflösung relativer Pfade und normalisiert `..`-Segmente vor der Tail-Redaktion. `_read_app_version()` liest `pyproject.toml` gezielt aus `[project]`, und `write_snapshot()` schreibt atomar über `os.replace` inklusive Temp-File-Cleanup bei Fehlern.

@@ -52,12 +52,9 @@ def _command_tokens(command: str) -> list[str]:
         stripped = token.strip()
         if not stripped:
             continue
-        if (
-            stripped.startswith('"')
-            and (len(stripped) == 1 or not stripped.endswith('"'))
-        ) or (
-            stripped.startswith("'")
-            and (len(stripped) == 1 or not stripped.endswith("'"))
+        if any(
+            (stripped.startswith(q) != stripped.endswith(q)) or stripped == q
+            for q in ('"', "'")
         ):
             return []
         cleaned.append(stripped)
