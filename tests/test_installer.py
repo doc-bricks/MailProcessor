@@ -274,7 +274,7 @@ def test_welcome_and_tools_page_expose_accessible_context(qapp, tm):
     ]
     for btn in dl_buttons:
         assert btn.accessibleName().startswith("Von GitHub laden: ")
-        assert "https://github.com/" in btn.accessibleDescription()
+        assert btn.accessibleDescription().startswith("https://github.com/")
         assert btn.toolTip().startswith("Von GitHub laden: ")
 
 

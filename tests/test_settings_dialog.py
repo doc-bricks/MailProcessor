@@ -164,3 +164,49 @@ def test_settings_dialog_accessibility_metadata(qapp):
     )
     assert dlg_en._lang_combo.accessibleName() == "Language:"
     set_language("de")
+
+
+def test_command_tokens_rejects_orphaned_closing_and_single_quotes(monkeypatch, tmp_path):
+    """_command_tokens() symmetrically rejects unmatched opening or closing quotes."""
+    import settings_dialog
+
+    assert settings_dialog._command_tokens(r'C:\MailProcessor.exe"') == []
+    assert settings_dialog._command_tokens(r"C:\MailProcessor.exe'") == []
+    assert settings_dialog._command_tokens('"') == []
+    assert settings_dialog._command_tokens("'") == []
+    assert settings_dialog._command_tokens(r'"C:\MailProcessor.exe"') == [r'"C:\MailProcessor.exe"']
+
+    monkeypatch.setattr(settings_dialog.sys, "frozen", True, raising=False)
+    fake_exe = tmp_path / "MailProcessor.exe"
+    monkeypatch.setattr(settings_dialog.sys, "executable", str(fake_exe))
+    assert settings_dialog._is_current_autostart_command(f'{fake_exe}"') is False
+
+
+def test_tray_open_settings_accept_saves_config_once(qapp, tmp_path, monkeypatch):
+    """Accepting SettingsDialog via _on_save() persists config exactly once."""
+    import config as cfg_module
+    import settings_dialog
+    from tray import MailProcessorTray
+
+    set_language("de")
+    cfg = AppConfig(language="de", first_run=False, start_with_windows=False)
+    cfg.config_file = tmp_path / "config.json"
+
+    save_calls: list[AppConfig] = []
+    monkeypatch.setattr(cfg_module, "save", lambda c: save_calls.append(c))
+    monkeypatch.setattr(settings_dialog.SettingsDialog, "_apply_autostart", staticmethod(lambda _enable: None))
+
+    def _accept_via_save(self):
+        self._on_save()
+        return 1  # QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(settings_dialog.SettingsDialog, "exec", _accept_via_save)
+
+    tray_icon = MailProcessorTray(cfg, parent=qapp)
+    try:
+        tray_icon._open_settings()
+        assert len(save_calls) == 1
+    finally:
+        tray_icon.hide()
+        tray_icon.setContextMenu(None)
+        tray_icon.deleteLater()
