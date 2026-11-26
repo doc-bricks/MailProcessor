@@ -23,10 +23,10 @@ def test_active_platform_status_documents_match_removed_companion_scope():
     releases = _read("RELEASES.md")
     llms = _read("llms.txt")
 
-    assert "79 Pytest tests" in readme
-    assert "79 Pytest-Tests" in readme_de
-    assert "79/79 Pytest tests" in llms
-    assert any(f"Last-checked: 2026-09-{d:02d}" in llms for d in (6, 10))
+    assert "127 Pytest tests" in readme
+    assert "127 Pytest-Tests" in readme_de
+    assert "127/127 Pytest tests" in llms
+    assert "Last-checked: 2026-11-26" in llms
 
     assert "former web/PWA companion" in readme
     assert "macOS and Linux" in readme

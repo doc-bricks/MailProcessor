@@ -13,17 +13,18 @@ System-Tray-Launcher für die drei Universal Mail Tools.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Plattform: Windows](https://img.shields.io/badge/plattform-Windows%20(System--Tray)-0078D6.svg?logo=windows&logoColor=white)](https://github.com/doc-bricks/MailProcessor)
 [![GUI: PySide6 Qt](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52.svg?logo=qt&logoColor=white)](https://pypi.org/project/PySide6/)
-[![Tests: 106 bestanden](https://img.shields.io/badge/tests-106%20bestanden-brightgreen.svg)](tests/)
+[![Tests: 127 bestanden](https://img.shields.io/badge/tests-127%20bestanden-brightgreen.svg)](tests/)
 [![Sicherheit: Richtlinie](https://img.shields.io/badge/sicherheit-SECURITY.md-blue.svg)](SECURITY.md)
 [![Sicherheits-SLA: 48h Reaktion](https://img.shields.io/badge/sicherheits--SLA-48h%20Reaktion-blue.svg)](SECURITY.md)
 [![Datenschutzhinweis: Entwurf](https://img.shields.io/badge/datenschutz-hinweis%20entwurf-blue.svg)](docs/PRIVACY_POLICY_DRAFT.md)
 [![Code-Stil: ruff](https://img.shields.io/badge/code--stil-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Dachverband: open-bricks](https://img.shields.io/badge/dachverband-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
+[![Produkt-Skill](https://img.shields.io/badge/Produkt--Skill-SKILL.md-brightgreen.svg)](SKILL.md)
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > [!NOTE]
-> Für KI-Agenten und automatisierte Werkzeuge sind wichtige Architektur- und Schnittstellen-Metadaten in [llms.txt](llms.txt) strukturiert aufbereitet.
+> Für KI-Agenten und automatisierte Werkzeuge sind Architektur- und Schnittstellen-Metadaten in [llms.txt](llms.txt) ([llm.txt](llm.txt)) strukturiert und die Headless-CLI-Nutzung in [SKILL.md](SKILL.md) dokumentiert.
 
 ---
 
@@ -63,6 +64,7 @@ MailProcessor sitzt im Windows-System-Tray und gibt per Rechtsklick Zugang zu:
 - Versionsnummern im Tray-Menü (aus CHANGELOG.md jedes Tools)
 - Einstellungen: Pfade anpassen, Tools entfernen, manuell hinzufügen
 - Read-only-Snapshot als `mailprocessor-suite-v1.json` für eine lokale Referenz exportieren; kein Web- oder Mobile-Companion ist aktiv
+- Dual-Use-Headless-CLI (`mailprocessor` / `python main.py status|scan|snapshot|register|unregister|launch|store-readiness` mit `--json`)
 - Autostart mit Windows (Registry-Eintrag)
 - Zweisprachig: Deutsch / Englisch
 
@@ -215,10 +217,12 @@ Die folgenden Kennungen fassen beobachtetes Produktverhalten und Sicherheitsgren
 
 ```bash
 python -m pytest -q
+python -m ruff check .
 python -m compileall .
+python main.py status --json
 ```
 
-Aktuelle lokale Testsuite: 79 Pytest-Tests.
+Aktuelle lokale Testsuite: 127 Pytest-Tests.
 
 ## Konfiguration
 

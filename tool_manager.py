@@ -11,6 +11,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Callable, Optional
+from urllib.parse import urlparse
 
 import config as cfg_module
 from config import AppConfig, ToolConfig
@@ -53,6 +54,11 @@ _SCAN_ROOTS = [
     Path(__file__).parent.parent.parent,   # .SOFTWARE/
     _DOWNLOAD_DIR,                         # downloaded via GitHub installer
 ]
+
+
+def _is_valid_http_url(url: str) -> bool:
+    parsed = urlparse(url.strip())
+    return parsed.scheme.lower() in ("http", "https") and bool(parsed.netloc)
 
 
 def _same_path(left: Path, right: Path) -> bool:
@@ -147,7 +153,7 @@ class ToolManager:
             for candidate in _iter_scan_candidates(root, folder_hints):
                 for script in scripts:
                     script_path = candidate / script
-                    if script_path.exists():
+                    if script_path.is_file():
                         return str(candidate), script
         return None
 
@@ -267,7 +273,7 @@ class ToolManager:
             return None
         p = Path(folder)
         for script in meta["main_scripts"]:
-            if (p / script).exists():
+            if (p / script).is_file():
                 return script
         return None
 
@@ -333,8 +339,10 @@ class ToolManager:
 
         zipball_url: Optional[str] = release.get("zipball_url")
         tag: str = release.get("tag_name", "latest")
-        if not zipball_url:
+        if not isinstance(zipball_url, str) or not zipball_url:
             return "No zipball_url in release info"
+        if not _is_valid_http_url(zipball_url):
+            return "Download error: invalid release archive URL"
 
         # Prepare download directory
         try:
@@ -358,6 +366,10 @@ class ToolManager:
                     if progress_cb and total > 0:
                         progress_cb(min(99, int(downloaded * 100 / total)))
         except Exception as exc:
+            try:
+                zip_path.unlink(missing_ok=True)
+            except OSError:
+                pass
             return f"Download error: {exc}"
 
         # Extract archive
@@ -369,6 +381,8 @@ class ToolManager:
             with zipfile.ZipFile(zip_path, "r") as zf:
                 resolved_extract_root = extract_root.resolve()
                 for member in zf.infolist():
+                    if stat.S_ISLNK(member.external_attr >> 16):
+                        return f"Extract error: unsafe archive entry {member.filename}"
                     member_target = (extract_root / member.filename).resolve()
                     if not (member_target == resolved_extract_root or resolved_extract_root in member_target.parents):
                         return f"Extract error: unsafe archive entry {member.filename}"

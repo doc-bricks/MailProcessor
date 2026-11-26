@@ -108,12 +108,44 @@ def _smoke_manual_tool_path_and_launch(tmp_root: Path) -> None:
     assert captured["env"]["PYTHONIOENCODING"] == "utf-8"
 
 
+def _smoke_cli_headless(tmp_root: Path) -> None:
+    import io
+    import json
+    from contextlib import redirect_stdout
+    import mailprocessor_cli
+
+    cfg_dir = tmp_root / "cli-home" / "MailProcessor"
+    cfg_file = cfg_dir / "config.json"
+    suite_root = tmp_root / "cli-suite"
+    tool_dir = _write_tool(suite_root, "REL-PUB_UniversalMailCleaner", "mail_imap_cleaner_v1.py")
+
+    with (
+        patch.object(cfg_module, "CONFIG_DIR", cfg_dir),
+        patch.object(cfg_module, "CONFIG_FILE", cfg_file),
+        patch.object(tm_module, "_SCAN_ROOTS", [suite_root]),
+        patch.object(tm_module, "_DOWNLOAD_DIR", tmp_root / "cli-downloads"),
+    ):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            assert mailprocessor_cli.main(["scan", "--apply", "--json"]) == 0
+        scan_data = json.loads(buf.getvalue())
+        assert scan_data["updated_tools"] == ["universal_mail_cleaner"]
+        assert Path(tool_dir).is_dir()
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            assert mailprocessor_cli.main(["status", "--json"]) == 0
+        status_data = json.loads(buf.getvalue())
+        assert status_data["ok"] is True
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory(prefix="mailprocessor-source-smoke-") as tmp:
         tmp_root = Path(tmp)
         _smoke_config(tmp_root)
         _smoke_scan(tmp_root)
         _smoke_manual_tool_path_and_launch(tmp_root)
+        _smoke_cli_headless(tmp_root)
 
     print("MailProcessor source-platform smoke: PASS")
     return 0

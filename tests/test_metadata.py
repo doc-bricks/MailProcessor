@@ -261,3 +261,19 @@ def test_llms_txt_integrity():
     assert "INV-SLA-08" in llms_content
     assert "flowchart TD" in llms_content
     assert "sequenceDiagram" in llms_content
+
+
+def test_p022_cli_entrypoint_and_skill_files():
+    """Verify Policy P-022 product skill, llm.txt, and console script entrypoint."""
+    data = tomllib.loads(_read_file("pyproject.toml"))
+    scripts = data.get("project", {}).get("scripts", {})
+    assert scripts.get("mailprocessor") == "mailprocessor_cli:main"
+
+    assert (ROOT / "SKILL.md").is_file()
+    assert (ROOT / "llm.txt").is_file()
+    readme_en = _read_file("README.md")
+    readme_de = _read_file("README-DE.md")
+    assert "SKILL.md" in readme_en
+    assert "SKILL.md" in readme_de
+    assert "llm.txt" in readme_en
+    assert "llm.txt" in readme_de

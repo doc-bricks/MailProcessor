@@ -13,17 +13,18 @@ System tray launcher for the three Universal Mail Tools.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%20(System%20Tray)-0078D6.svg?logo=windows&logoColor=white)](https://github.com/doc-bricks/MailProcessor)
 [![GUI: PySide6 Qt](https://img.shields.io/badge/GUI-PySide6%20Qt-41CD52.svg?logo=qt&logoColor=white)](https://pypi.org/project/PySide6/)
-[![Tests: 106 passed](https://img.shields.io/badge/tests-106%20passed-brightgreen.svg)](tests/)
+[![Tests: 127 passed](https://img.shields.io/badge/tests-127%20passed-brightgreen.svg)](tests/)
 [![Security: Policy](https://img.shields.io/badge/security-SECURITY.md-blue.svg)](SECURITY.md)
 [![Security SLA: 48h Response](https://img.shields.io/badge/security%20SLA-48h%20response-blue.svg)](SECURITY.md)
 [![Privacy notice: draft](https://img.shields.io/badge/privacy-notice%20draft-blue.svg)](docs/PRIVACY_POLICY_DRAFT.md)
 [![Code Style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Umbrella: open-bricks](https://img.shields.io/badge/umbrella-open--bricks-blue.svg)](https://github.com/open-bricks)
 [![LLM Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-brightgreen.svg)](llms.txt)
+[![Product Skill](https://img.shields.io/badge/Product--Skill-SKILL.md-brightgreen.svg)](SKILL.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > [!NOTE]
-> For AI agents and automated tools, key architecture and interface metadata are indexed in [llms.txt](llms.txt).
+> For AI agents and automated tools, key architecture and interface metadata are indexed in [llms.txt](llms.txt) ([llm.txt](llm.txt)), and headless CLI instructions are documented in [SKILL.md](SKILL.md).
 
 ---
 
@@ -63,6 +64,7 @@ MailProcessor sits in the Windows system tray and gives you one-click access to:
 - Version numbers shown in tray menu (read from each tool's CHANGELOG.md)
 - Settings: change paths, remove tools, add manually
 - Read-only snapshot export as `mailprocessor-suite-v1.json` for local reference; no web or mobile companion is active
+- Dual-use headless CLI (`mailprocessor` / `python main.py status|scan|snapshot|register|unregister|launch|store-readiness` with `--json`)
 - Windows autostart (registry entry)
 - Bilingual: German / English
 
@@ -212,10 +214,12 @@ The following identifiers summarize observed product behavior and security bound
 
 ```bash
 python -m pytest -q
+python -m ruff check .
 python -m compileall .
+python main.py status --json
 ```
 
-Current local test suite: 79 Pytest tests.
+Current local test suite: 127 Pytest tests.
 
 ## Configuration
 

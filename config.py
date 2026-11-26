@@ -49,10 +49,16 @@ def load() -> AppConfig:
         data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
         if not isinstance(data, dict):
             return AppConfig()
+        raw_lang = data.get("language", "de")
+        language = raw_lang if isinstance(raw_lang, str) and raw_lang in ("de", "en") else "de"
+        raw_first_run = data.get("first_run", True)
+        first_run = raw_first_run if isinstance(raw_first_run, bool) else True
+        raw_autostart = data.get("start_with_windows", False)
+        start_with_windows = raw_autostart if isinstance(raw_autostart, bool) else False
         cfg = AppConfig(
-            language=data.get("language", "de"),
-            first_run=data.get("first_run", True),
-            start_with_windows=data.get("start_with_windows", False),
+            language=language,
+            first_run=first_run,
+            start_with_windows=start_with_windows,
         )
         tools_data = data.get("tools", {})
         if not isinstance(tools_data, dict):

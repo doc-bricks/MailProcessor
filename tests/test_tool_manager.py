@@ -596,3 +596,148 @@ def test_register_from_script_path_handles_directory_or_file(tm, tmp_path):
     assert tm.register_from_script_path("universal_docs_grabber", str(empty_dir)) is False
 
 
+def test_find_script_in_folder_and_scan_ignore_directory_named_like_script(tm, tmp_path, monkeypatch):
+    import tool_manager
+
+    tool_dir = tmp_path / "REL-PUB_UniversalMailCleaner"
+    (tool_dir / "mail_imap_cleaner_v1.py").mkdir(parents=True)
+
+    assert ToolManager.find_script_in_folder(str(tool_dir), "universal_mail_cleaner") is None
+
+    monkeypatch.setattr(tool_manager, "_SCAN_ROOTS", [tmp_path])
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", tmp_path / "downloads")
+    assert tm.scan()["universal_mail_cleaner"] is None
+
+
+def test_download_tool_rejects_non_http_zipball_url(tm, tmp_path, monkeypatch):
+    import io
+    import json
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+    calls = []
+
+    class FakeResponse:
+        def __init__(self, data):
+            self.data = io.BytesIO(data)
+            self.headers = {}
+
+        def read(self, size=-1):
+            return self.data.read(size)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        calls.append(url)
+        return FakeResponse(
+            json.dumps({"tag_name": "v1.0.0", "zipball_url": "file:///etc/passwd"}).encode("utf-8")
+        )
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err == "Download error: invalid release archive URL"
+    assert len(calls) == 1
+
+
+def test_download_tool_cleans_up_partial_zip_on_stream_failure(tm, tmp_path, monkeypatch):
+    import io
+    import json
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    class FailingStream:
+        headers = {"Content-Length": "100"}
+
+        def read(self, size=-1):
+            raise OSError("network drop")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    class FakeMetaResp:
+        def __init__(self, data):
+            self.data = io.BytesIO(data)
+
+        def read(self, size=-1):
+            return self.data.read(size)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
+        url = req.full_url if hasattr(req, "full_url") else req
+        if urlparse(url).hostname == "api.github.com":
+            return FakeMetaResp(
+                json.dumps({"tag_name": "v1.0.0", "zipball_url": "https://example.com/a.zip"}).encode("utf-8")
+            )
+        return FailingStream()
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is not None
+    assert "network drop" in err
+    assert not (download_root / "universal_mail_cleaner" / "v1.0.0.zip").exists()
+
+
+def test_download_tool_rejects_symlink_archive_entries(tm, tmp_path, monkeypatch):
+    import io
+    import json
+    import stat
+    import zipfile
+    import tool_manager
+
+    download_root = tmp_path / "downloads"
+    monkeypatch.setattr(tool_manager, "_DOWNLOAD_DIR", download_root)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        info = zipfile.ZipInfo("UniversalMailCleaner-1.0.0/link")
+        info.create_system = 3
+        info.external_attr = (stat.S_IFLNK | 0o777) << 16
+        zf.writestr(info, "/etc/passwd")
+    zip_bytes = zip_buffer.getvalue()
+
+    class FakeResponse:
+        def __init__(self, data, headers=None):
+            self.data = io.BytesIO(data)
+            self.headers = headers or {}
+
+        def read(self, size=-1):
+            return self.data.read(size)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    def fake_urlopen(req, timeout=None):
+        from urllib.parse import urlparse
+        url = req.full_url if hasattr(req, "full_url") else req
+        if urlparse(url).hostname == "api.github.com":
+            return FakeResponse(
+                json.dumps({"tag_name": "v1.0.0", "zipball_url": "https://example.com/sym.zip"}).encode("utf-8")
+            )
+        return FakeResponse(zip_bytes, {"Content-Length": str(len(zip_bytes))})
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    err = tm.download_tool("universal_mail_cleaner")
+    assert err is not None
+    assert "unsafe archive entry" in err
+
+

@@ -9,6 +9,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- **Policy P-022 Dual-Use Headless CLI, Product Skill & Entry Points (`mailprocessor_cli.py`, `main.py`, `pyproject.toml`, `SKILL.md`, `llm.txt`, `llms.txt`) (2026-11-26)**:
+  - **Headless CLI ohne PySide6-Pflicht**: Neues Modul `mailprocessor_cli.py` und `[project.scripts]`-Einstiegspunkt `mailprocessor` sowie direkte Dispatch-Weiche in `main.py` (`--version`, `status`, `scan [--apply]`, `snapshot [--out]`, `register`, `unregister --yes|--dry-run`, `launch [--dry-run]`, `store-readiness`) mit maschinenlesbarer `--json`-Ausgabe und redigierten Pfadhinweisen.
+  - **Mitgelieferte LLM-Dokumentation (P-022)**: `SKILL.md` und `llm.txt` angelegt sowie `llms.txt`, `README.md` und `README-DE.md` aktualisiert.
+  - **Vertragstests**: `tests/test_cli_and_p022.py` und `tests/test_metadata.py` um CLI-, P-022- und Entrypoint-Verträge erweitert (`127/127` Pytest-Tests).
+
 - **Multi-Resolution App-Icon Suite, PWA/Store-Assets & Runtime-Window-Icon-Integration (2026-09-22)**:
   - **1024x1024 Master-PNGs**: Hochauflösendes Master-Icon (`MailProcessor.png`, `DesktopIcon.png`, `icon.png`) mit originalgetreuer Roboter-Briefumschlag-Markenidentität und Schärfung generiert.
   - **7-Layer Windows-ICOs**: Standardisierte Multi-Resolution-ICOs (16, 24, 32, 48, 64, 128, 256 px @ 32 bpp RGBA) für Desktop-Shortcuts, Taskleiste und Windows Explorer in Root, `resources/icon.ico` und `assets/` bereitgestellt; SHA-256-Synchronität zwischen Build- und Runtime-Icon gesichert.
@@ -19,6 +24,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Vertragstests**: `tests/test_assets_and_icons.py` mit 6 umfassenden Tests zur Validierung aller Layer, Dimensionen, Paritäten, PWA-Struktur und Laufzeit-Icon-Funktion implementiert (96 Tests bestanden, 100% grün).
 
 ### Fixed
+
+- **Top-Level-Config-Normalisierung & ToolManager Download-/Script-Härtung (`config.py`, `tool_manager.py`) (2026-11-26)**:
+  - `config.load()` normalisiert nun auch ungültige Typen/Werte der Top-Level-Felder `language`, `first_run` und `start_with_windows` sicher auf Defaults statt fehlerhafte Strings (z. B. `"false"`, `"yes"`) als `True` zu übernehmen.
+  - `ToolManager._find_tool()` und `find_script_in_folder()` prüfen `is_file()` statt `exists()`, damit Verzeichnisse mit Skriptnamen nicht als Startskript erkannt werden.
+  - `ToolManager.download_tool()` validiert `zipball_url` auf `http://`/`https://`-Schema, weist Symlink-Einträge im ZIP-Archiv ab und bereinigt unvollständige `.zip`-Dateien bei Stream-Fehlern.
+  - 5 neue Regressionstests in `tests/test_config.py` und `tests/test_tool_manager.py`.
 
 - **Symmetrische Quote-Härtung im Autostart-Parser, Bereinigung doppelten Config-Saves & CodeQL-URL-Check (settings_dialog.py, tray.py, tests/test_installer.py) (2026-11-24)**:
   - **Symmetrische Anführungszeichen-Prüfung**: `settings_dialog._command_tokens()` lehnt nun symmetrisch sowohl verwaiste öffnende als auch verwaiste schließende oder einzelne Anführungszeichen (`startswith(q) != endswith(q)` bzw. `stripped == q`) ab.

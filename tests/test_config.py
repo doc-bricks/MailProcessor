@@ -248,6 +248,29 @@ def test_app_data_dir_falls_back_to_home_when_localappdata_is_empty(monkeypatch)
     assert cfg_module.app_data_dir() == Path.home() / "MailProcessor"
 
 
+def test_load_normalizes_invalid_top_level_field_types():
+    config_dir = Path(str(cfg_module.CONFIG_DIR))
+    config_dir.mkdir(parents=True, exist_ok=True)
+    cfg_file = Path(str(cfg_module.CONFIG_FILE))
+    cfg_file.write_text(
+        json.dumps(
+            {
+                "language": "fr",
+                "first_run": "false",
+                "start_with_windows": "yes",
+                "tools": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    cfg = cfg_module.load()
+
+    assert cfg.language == "de"
+    assert cfg.first_run is True
+    assert cfg.start_with_windows is False
+
+
 def test_app_data_dir_falls_back_to_home_when_localappdata_is_relative(monkeypatch):
     monkeypatch.setenv("LOCALAPPDATA", "relative-localappdata")
 
