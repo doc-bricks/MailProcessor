@@ -1,16 +1,18 @@
-## Last-checked: 2026-09-10
+## Last-checked: 2026-11-26
 
 # MailProcessor
 
 Canonical repository: https://github.com/doc-bricks/MailProcessor
-Verified status: 79/79 Pytest tests passing; source-platform smoke PASS
+Product skill: SKILL.md
+Compatibility alias: llm.txt
+Verified status: 127/127 Pytest tests passing; source-platform smoke PASS; ruff check PASS
 Organization: doc-bricks
 Umbrella: open-bricks
 Primary language: Python
-UI stack: PySide6 desktop tray application
+UI stack: PySide6 desktop tray application + dependency-free headless CLI
 License: MIT
 
-MailProcessor is a Windows tray hub for the doc-bricks Universal Mail Tools. It stores launcher settings locally and can download selected tool releases from GitHub when the user starts a download:
+MailProcessor is a Windows tray hub and headless CLI for the doc-bricks Universal Mail Tools. It stores launcher settings locally and can download selected tool releases from GitHub when the user starts a download in the setup wizard:
 
 - Universal Mail Cleaner: https://github.com/doc-bricks/UniversalMailCleaner
 - Universal Docs Grabber: https://github.com/doc-bricks/UniversalDocsGrabber
@@ -18,11 +20,12 @@ MailProcessor is a Windows tray hub for the doc-bricks Universal Mail Tools. It 
 
 Core behavior:
 
-- Starts configured mail tools from a single system tray menu.
+- Starts configured mail tools from a single system tray menu or headless CLI (`mailprocessor` / `python main.py`).
 - Scans sibling folders and `%LOCALAPPDATA%\MailProcessor\tools\` for supported tools.
 - Downloads latest tool releases from GitHub when users opt in through the setup wizard.
 - Stores launcher configuration under `%LOCALAPPDATA%\MailProcessor\config.json`.
 - Exports a read-only `mailprocessor-suite-v1.json` snapshot for offline reference.
+- Exposes dual-use headless CLI subcommands (`--version`, `status`, `scan`, `snapshot`, `register`, `unregister`, `launch`, `store-readiness`) with `--json` output and without requiring PySide6 at import time.
 - Has no active web/PWA or Android/iOS companion; the former companion was deliberately removed after its use-case review.
 - Maintains a source-level macOS/Linux contract only; no native package or end-user platform release is verified.
 - Provides a read-only `store_readiness.py` CLI with text and JSON output; the
@@ -58,12 +61,15 @@ Local verification:
 
 ```bash
 python -m pytest -q
+python -m ruff check .
 python -m compileall .
+python main.py status --json
 ```
 
 ## Audience
 
 - Windows users running multiple Universal Mail Tools who want a single launch point
+- AI assistants and automation scripts managing mail tool discovery and snapshots via `SKILL.md` and `mailprocessor` CLI
 - Privacy-conscious home users and small business owners managing IMAP mail locally
 - Developers building on top of the doc-bricks Universal Mail Tools suite
 
@@ -74,7 +80,7 @@ MailProcessor Windows tray mail launcher
 doc-bricks MailProcessor PySide6
 Windows mail tools launcher with optional GitHub downloads
 Universal Mail Cleaner Docs Grabber Invoice Mail hub
-Windows mail tool manager Python desktop
+Windows mail tool manager Python desktop CLI
 ```
 
 ## Related tools

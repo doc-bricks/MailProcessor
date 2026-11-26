@@ -1,0 +1,4 @@
+# MailProcessor
+
+Canonical LLM overview: [llms.txt](llms.txt)
+Product skill and CLI reference: [SKILL.md](SKILL.md)

@@ -2,18 +2,14 @@
 
 import sys
 
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
-
-import config as cfg_module
-from i18n import set_language, tr
-
 
 def _run_bundle_self_test() -> int:
     """Exercise packaged assets and the primary Qt UI without user state."""
-    from PySide6.QtCore import QEvent, QEventLoop, QObject, QTimer
+    from PySide6.QtCore import QEvent, QEventLoop, QObject, QTimer, Qt
     from PySide6.QtGui import QIcon
+    from PySide6.QtWidgets import QApplication
     from config import AppConfig
+    from i18n import set_language
     from settings_dialog import SettingsDialog
     from tray import MailProcessorTray, _resource_path
 
@@ -129,6 +125,17 @@ def _run_bundle_self_test() -> int:
 def main():
     if sys.argv[1:] == ["--self-test"]:
         return _run_bundle_self_test()
+
+    from mailprocessor_cli import main as cli_main, should_dispatch_cli
+
+    if should_dispatch_cli(sys.argv[1:]):
+        return cli_main(sys.argv[1:])
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication
+
+    import config as cfg_module
+    from i18n import set_language, tr
 
     # High-DPI
     QApplication.setHighDpiScaleFactorRoundingPolicy(
